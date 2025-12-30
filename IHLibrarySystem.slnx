@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="IH.LibrarySystem.Api/IH.LibrarySystem.Api.csproj" />
+  <Project Path="IH.LibrarySystem.Application/IH.LibrarySystem.Application.csproj" />
+  <Project Path="IH.LibrarySystem.Domain/IH.LibrarySystem.Domain.csproj" />
+  <Project Path="IH.LibrarySystem.Infrastructure/IH.LibrarySystem.Infrastructure.csproj" />
+</Solution>
