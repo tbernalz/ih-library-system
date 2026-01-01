@@ -6,10 +6,14 @@ public class Loan : Entity
 {
     public Guid BookId { get; private set; }
     public Guid MemberId { get; private set; }
+
     public DateTime LoanDate { get; private set; }
     public DateTime DueDate { get; private set; }
     public DateTime? ReturnDate { get; private set; }
     public decimal? FineAmount { get; private set; }
+
+    public Book? Book { get; private set; }
+    public Member? Member { get; private set; }
 
     private Loan()
         : base(Guid.Empty) { }
@@ -32,5 +36,5 @@ public class Loan : Entity
         Guid memberId,
         DateTime loanDate,
         DateTime dueDate
-    ) => new Loan(id, bookId, memberId, loanDate, dueDate);
+    ) => new(id, bookId, memberId, loanDate, dueDate);
 }

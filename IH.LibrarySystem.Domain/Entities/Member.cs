@@ -5,10 +5,14 @@ namespace IH.LibrarySystem.Domain.Entities;
 
 public class Member : Entity
 {
+    private readonly List<Loan> _loans = [];
+
     public string Name { get; private set; } = default!;
     public string Email { get; private set; } = default!;
     public DateTime JoinDate { get; private set; }
     public MemberStatus Status { get; private set; }
+
+    public IReadOnlyCollection<Loan> Loans => _loans.AsReadOnly();
 
     private Member()
         : base(Guid.Empty) { }
@@ -26,5 +30,5 @@ public class Member : Entity
     }
 
     public static Member Create(Guid id, string name, string email, DateTime? joinDate = null) =>
-        new Member(id, name, email, joinDate);
+        new(id, name, email, joinDate);
 }
