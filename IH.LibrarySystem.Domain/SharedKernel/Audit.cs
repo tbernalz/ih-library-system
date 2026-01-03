@@ -1,4 +1,4 @@
-﻿namespace StandUsers.Domain.SharedKernel;
+﻿namespace IH.LibrarySystem.Domain.SharedKernel;
 
 public class Audit
 {
