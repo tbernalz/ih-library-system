@@ -30,4 +30,29 @@ public class Book : Entity
 
     public static Book Create(Guid id, string title, string isbn, Guid authorId, string genre) =>
         new(id, title, isbn, authorId, genre);
+
+    public void AssignAuthor(Guid authorId)
+    {
+        if (authorId == Guid.Empty)
+            throw new ArgumentException("AuthorId cannot be empty.", nameof(authorId));
+
+        if (AuthorId != authorId)
+        {
+            AuthorId = authorId;
+            SetUpdated();
+        }
+    }
+
+    public void ChangeMetadata(string title, string isbn, string genre)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+        ArgumentException.ThrowIfNullOrWhiteSpace(isbn);
+        ArgumentException.ThrowIfNullOrWhiteSpace(genre);
+
+        Title = title;
+        Isbn = isbn;
+        Genre = genre;
+
+        SetUpdated();
+    }
 }
