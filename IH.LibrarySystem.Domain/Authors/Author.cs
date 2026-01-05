@@ -19,4 +19,16 @@ public class Author : Entity
     }
 
     public static Author Create(Guid id, string name, string? bio = null) => new(id, name, bio);
+
+    public void Update(string name, string? bio)
+    {
+        if (Name == name && Bio == bio)
+            return;
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        Name = name;
+        Bio = bio;
+        SetUpdated();
+    }
 }
