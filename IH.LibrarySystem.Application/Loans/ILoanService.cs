@@ -1,0 +1,8 @@
+using IH.LibrarySystem.Application.Loans.Dtos;
+
+namespace IH.LibrarySystem.Application.Loans;
+
+public interface ILoanService
+{
+    Task<LoanDto?> GetLoanByIdAsync(Guid loanId);
+}
