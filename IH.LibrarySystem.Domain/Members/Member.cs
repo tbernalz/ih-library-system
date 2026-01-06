@@ -26,4 +26,17 @@ public class Member : Entity
 
     public static Member Create(Guid id, string name, string email, DateTime? joinDate = null) =>
         new(id, name, email, joinDate);
+
+    public void Update(string name, string email)
+    {
+        if (Name == name && Email == email)
+            return;
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrWhiteSpace(email);
+
+        Name = name;
+        Email = email;
+        SetUpdated();
+    }
 }
