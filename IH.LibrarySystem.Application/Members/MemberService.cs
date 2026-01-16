@@ -5,17 +5,20 @@ namespace IH.LibrarySystem.Application.Members;
 
 public class MemberService(IMemberRepository repository) : IMemberService
 {
-    public async Task<MemberDto?> GetMemberByIdAsync(Guid memberId)
+    public async Task<MemberDto> GetMemberByIdAsync(Guid memberId)
     {
-        var member = await repository.GetByIdAsync(memberId);
-        return member is null ? null : MapToDto(member);
+        var member =
+            await repository.GetByIdAsync(memberId)
+            ?? throw new KeyNotFoundException($"Member with ID {memberId} not found.");
+        return MapToDto(member);
     }
 
     public async Task<MemberDto> RegisterMemberAsync(RegisterMemberRequest request)
     {
-        var existing =
-            await repository.GetByEmailAsync(request.Email)
-            ?? throw new KeyNotFoundException($"Email '{request.Email}' is already registered.");
+        var existing = await repository.GetByEmailAsync(request.Email);
+
+        if (existing is not null)
+            throw new KeyNotFoundException($"Email '{request.Email}' is already registered.");
 
         var member = Member.Create(Guid.NewGuid(), request.Name, request.Email);
 
@@ -32,6 +35,9 @@ public class MemberService(IMemberRepository repository) : IMemberService
             await repository.GetByIdAsync(memberId)
             ?? throw new KeyNotFoundException($"Member with ID {memberId} not found.");
 
+        if (request.Name == member.Name && request.Email == member.Email)
+            return MapToDto(member);
+
         if (!string.Equals(member.Email, request.Email, StringComparison.OrdinalIgnoreCase))
         {
             var existing = await repository.GetByEmailAsync(request.Email);
@@ -40,7 +46,7 @@ public class MemberService(IMemberRepository repository) : IMemberService
         }
 
         member.Update(request.Name, request.Email);
-
+        repository.Update(member);
         await repository.SaveChangesAsync();
 
         return MapToDto(member);
