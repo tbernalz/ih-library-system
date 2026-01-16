@@ -11,7 +11,6 @@ public class AuthorRepository : BaseRepository<Author>, IAuthorRepository
 
     public async Task<Author?> GetByEmailAsync(string email)
     {
-        var lowerEmail = email.ToLower();
-        return await DbSet.FirstOrDefaultAsync(a => a.Email.ToLower() == lowerEmail);
+        return await DbSet.FirstOrDefaultAsync(a => a.Email == email);
     }
 }
