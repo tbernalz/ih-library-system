@@ -1,0 +1,32 @@
+@IH_LibrarySystem_Api_HostAddress = http://localhost:5192
+
+
+# @name createAuthor
+POST {{IH_LibrarySystem_Api_HostAddress}}/api/authors
+Content-Type: application/json
+
+{
+  "name": "J. R. R. Tolkien",
+  "email": "jrr@tolkien.com",
+  "bio": "English writer and philologist.."
+}
+
+###
+@authorId = {{createAuthor.response.body.id}}
+
+GET {{IH_LibrarySystem_Api_HostAddress}}/api/authors/{{authorId}}
+
+###
+
+PUT {{IH_LibrarySystem_Api_HostAddress}}/api/authors/{{authorId}}
+Content-Type: application/json
+
+{
+  "name": "J. R. R. Tolkien",
+  "email": "jrr.updated@tolkien.com",
+  "bio": "Updated biography."
+}
+
+###
+
+DELETE {{IH_LibrarySystem_Api_HostAddress}}/api/authors/{{authorId}}
