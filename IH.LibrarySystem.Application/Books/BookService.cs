@@ -7,10 +7,13 @@ namespace IH.LibrarySystem.Application.Books;
 public class BookService(IBookRepository bookRepository, IAuthorRepository authorRepository)
     : IBookService
 {
-    public async Task<BookDto?> GetBookByIdAsync(Guid bookId)
+    public async Task<BookDto> GetBookByIdAsync(Guid bookId)
     {
-        var book = await bookRepository.GetByIdAsync(bookId);
-        return book is null ? null : MapToDto(book);
+        var book =
+            await bookRepository.GetByIdAsync(bookId)
+            ?? throw new KeyNotFoundException($"Book with ID {bookId} not found.");
+
+        return MapToDto(book);
     }
 
     public async Task<BookDto> CreateBookAsync(CreateBookRequestDto request)
@@ -42,6 +45,16 @@ public class BookService(IBookRepository bookRepository, IAuthorRepository autho
             await bookRepository.GetByIdAsync(bookId)
             ?? throw new KeyNotFoundException($"Book with ID {bookId} not found.");
 
+        if (request.Title == book.Title && request.Isbn == book.Isbn && request.Genre == book.Genre)
+            return MapToDto(book);
+
+        var existingBook = await bookRepository.GetByIsbnAsync(request.Isbn);
+
+        if (existingBook is not null && existingBook.Id != book.Id)
+            throw new KeyNotFoundException(
+                $"ISBN '{request.Isbn}' is already taken by another book."
+            );
+
         book.ChangeMetadata(request.Title, request.Isbn, request.Genre);
         bookRepository.Update(book);
         await bookRepository.SaveChangesAsync();
@@ -54,9 +67,6 @@ public class BookService(IBookRepository bookRepository, IAuthorRepository autho
         var book =
             await bookRepository.GetByIdAsync(bookId)
             ?? throw new KeyNotFoundException($"Book with ID {bookId} not found.");
-
-        if (book is null)
-            return;
 
         bookRepository.Delete(book);
         await bookRepository.SaveChangesAsync();
