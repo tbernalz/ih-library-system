@@ -18,6 +18,13 @@ public class BookService(IBookRepository bookRepository, IAuthorRepository autho
 
     public async Task<BookDto> CreateBookAsync(CreateBookRequestDto request)
     {
+        var existingBook = await bookRepository.GetByIsbnAsync(request.Isbn);
+
+        if (existingBook != null)
+        {
+            throw new InvalidOperationException($"Book with ISBN {request.Isbn} already exists.");
+        }
+
         var author =
             await authorRepository.GetByIdAsync(request.AuthorId)
             ?? throw new KeyNotFoundException($"Author with ID {request.AuthorId} not found.");
@@ -51,7 +58,7 @@ public class BookService(IBookRepository bookRepository, IAuthorRepository autho
         var existingBook = await bookRepository.GetByIsbnAsync(request.Isbn);
 
         if (existingBook is not null && existingBook.Id != book.Id)
-            throw new KeyNotFoundException(
+            throw new InvalidOperationException(
                 $"ISBN '{request.Isbn}' is already taken by another book."
             );
 
