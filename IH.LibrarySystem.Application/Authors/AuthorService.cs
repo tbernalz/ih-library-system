@@ -17,8 +17,9 @@ public class AuthorService(IAuthorRepository repository) : IAuthorService
     public async Task<AuthorDto> CreateAuthorAsync(CreateAuthorRequestDto request)
     {
         var existing = await repository.GetByEmailAsync(request.Email);
+
         if (existing is not null)
-            throw new KeyNotFoundException($"Email '{request.Email}' is already registered.");
+            throw new InvalidOperationException($"Email '{request.Email}' is already registered.");
 
         var author = Author.Create(Guid.NewGuid(), request.Name, request.Email, request.Bio);
         await repository.AddAsync(author);
@@ -44,7 +45,7 @@ public class AuthorService(IAuthorRepository repository) : IAuthorService
         {
             var existing = await repository.GetByEmailAsync(request.Email);
             if (existing is not null)
-                throw new KeyNotFoundException($"Email '{request.Email}' is already taken.");
+                throw new InvalidOperationException($"Email '{request.Email}' is already taken.");
         }
 
         author.Update(request.Name, request.Email, request.Bio);
