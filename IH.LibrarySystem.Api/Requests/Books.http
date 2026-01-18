@@ -1,0 +1,29 @@
+@IH_LibrarySystem_Api_HostAddress = http://localhost:5192
+@authorId = 00000000-0000-0000-0000-000000000000
+
+# @name createBook
+POST {{IH_LibrarySystem_Api_HostAddress}}/api/books
+Content-Type: application/json
+
+{
+  "title": "The Lord of the Rings: The Return of the King",
+  "isbn": "9780618002245",
+  "genre": "Fantasy",
+  "authorId": "{{authorId}}"
+}
+
+###
+@bookId = {{createBook.response.body.id}}
+
+GET {{IH_LibrarySystem_Api_HostAddress}}/api/books/{{bookId}}
+
+###
+
+PUT {{IH_LibrarySystem_Api_HostAddress}}/api/books/{{bookId}}
+Content-Type: application/json
+
+{
+  "title": "The Lord of the Rings: Why Is Everything So Far Away?",
+  "isbn": "9780618002245",
+  "genre": "Fantasy - Updated"
+}
