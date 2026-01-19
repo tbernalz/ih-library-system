@@ -19,7 +19,6 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
 
         builder.Property(b => b.Genre).IsRequired().HasMaxLength(100);
 
-        // builder.Property(b => b.Status).IsRequired().HasConversion<int>();
         builder.Property(b => b.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
 
         builder.Property(b => b.AuthorId).IsRequired();

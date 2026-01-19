@@ -172,6 +172,7 @@ namespace IH.LibrarySystem.Infrastructure.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("Status")
+                        .HasMaxLength(50)
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")

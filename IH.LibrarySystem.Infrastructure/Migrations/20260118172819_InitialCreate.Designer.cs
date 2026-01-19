@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IH.LibrarySystem.Infrastructure.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    [Migration("20260113170940_InitialCreate")]
+    [Migration("20260118172819_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -175,6 +175,7 @@ namespace IH.LibrarySystem.Infrastructure.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("Status")
+                        .HasMaxLength(50)
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
