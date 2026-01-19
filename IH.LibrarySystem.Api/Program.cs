@@ -1,10 +1,16 @@
+using System.Text.Json.Serialization;
 using IH.LibrarySystem.Api.Middleware;
 using IH.LibrarySystem.Application;
 using IH.LibrarySystem.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 builder.Services.AddProblemDetails();
 
