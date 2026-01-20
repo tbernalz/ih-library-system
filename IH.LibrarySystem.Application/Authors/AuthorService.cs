@@ -1,9 +1,10 @@
 using IH.LibrarySystem.Application.Authors.Dtos;
 using IH.LibrarySystem.Domain.Authors;
+using IH.LibrarySystem.Domain.SharedKernel;
 
 namespace IH.LibrarySystem.Application.Authors;
 
-public class AuthorService(IAuthorRepository repository) : IAuthorService
+public class AuthorService(IAuthorRepository repository, IUnitOfWork unitOfWork) : IAuthorService
 {
     public async Task<AuthorDto> GetAuthorByIdAsync(Guid authorId)
     {
@@ -23,7 +24,7 @@ public class AuthorService(IAuthorRepository repository) : IAuthorService
 
         var author = Author.Create(Guid.NewGuid(), request.Name, request.Email, request.Bio);
         await repository.AddAsync(author);
-        await repository.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return MapToDto(author);
     }
@@ -50,7 +51,7 @@ public class AuthorService(IAuthorRepository repository) : IAuthorService
 
         author.Update(request.Name, request.Email, request.Bio);
         repository.Update(author);
-        await repository.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return MapToDto(author);
     }
@@ -62,7 +63,7 @@ public class AuthorService(IAuthorRepository repository) : IAuthorService
             ?? throw new KeyNotFoundException($"Author with ID {authorId} not found.");
 
         repository.Delete(author);
-        await repository.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 
     private static AuthorDto MapToDto(Author author) =>

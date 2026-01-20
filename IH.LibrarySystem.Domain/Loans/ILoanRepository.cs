@@ -7,6 +7,4 @@ public interface ILoanRepository
     Task AddAsync(Loan loan);
     void Update(Loan loan);
     void Delete(Loan loan);
-
-    Task SaveChangesAsync();
 }

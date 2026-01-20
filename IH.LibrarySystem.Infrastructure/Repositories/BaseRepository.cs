@@ -22,6 +22,4 @@ public abstract class BaseRepository<T>
     public virtual void Update(T entity) => DbSet.Update(entity);
 
     public virtual void Delete(T entity) => DbSet.Remove(entity);
-
-    public virtual async Task SaveChangesAsync() => await Context.SaveChangesAsync();
 }

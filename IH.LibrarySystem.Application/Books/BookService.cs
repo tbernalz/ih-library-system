@@ -1,11 +1,15 @@
 using IH.LibrarySystem.Application.Books.Dtos;
 using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
+using IH.LibrarySystem.Domain.SharedKernel;
 
 namespace IH.LibrarySystem.Application.Books;
 
-public class BookService(IBookRepository bookRepository, IAuthorRepository authorRepository)
-    : IBookService
+public class BookService(
+    IBookRepository bookRepository,
+    IAuthorRepository authorRepository,
+    IUnitOfWork unitOfWork
+) : IBookService
 {
     public async Task<BookDto> GetBookByIdAsync(Guid bookId)
     {
@@ -39,7 +43,7 @@ public class BookService(IBookRepository bookRepository, IAuthorRepository autho
         book.AssignAuthor(author.Id);
 
         await bookRepository.AddAsync(book);
-        await bookRepository.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return MapToDto(book);
     }
@@ -64,7 +68,7 @@ public class BookService(IBookRepository bookRepository, IAuthorRepository autho
 
         book.ChangeMetadata(request.Title, request.Isbn, request.Genre);
         bookRepository.Update(book);
-        await bookRepository.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return MapToDto(book);
     }
@@ -76,7 +80,7 @@ public class BookService(IBookRepository bookRepository, IAuthorRepository autho
             ?? throw new KeyNotFoundException($"Book with ID {bookId} not found.");
 
         bookRepository.Delete(book);
-        await bookRepository.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 
     private static BookDto MapToDto(Book book) =>

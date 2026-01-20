@@ -8,6 +8,4 @@ public interface IBookRepository
     Task AddAsync(Book book);
     void Update(Book book);
     void Delete(Book book);
-
-    Task SaveChangesAsync();
 }

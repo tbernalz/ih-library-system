@@ -1,9 +1,10 @@
 using IH.LibrarySystem.Application.Members.Dtos;
 using IH.LibrarySystem.Domain.Members;
+using IH.LibrarySystem.Domain.SharedKernel;
 
 namespace IH.LibrarySystem.Application.Members;
 
-public class MemberService(IMemberRepository repository) : IMemberService
+public class MemberService(IMemberRepository repository, IUnitOfWork unitOfWork) : IMemberService
 {
     public async Task<MemberDto> GetMemberByIdAsync(Guid memberId)
     {
@@ -18,12 +19,12 @@ public class MemberService(IMemberRepository repository) : IMemberService
         var existing = await repository.GetByEmailAsync(request.Email);
 
         if (existing is not null)
-            throw new KeyNotFoundException($"Email '{request.Email}' is already registered.");
+            throw new InvalidOperationException($"Email '{request.Email}' is already registered.");
 
         var member = Member.Create(Guid.NewGuid(), request.Name, request.Email);
 
         await repository.AddAsync(member);
-        await repository.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
         return MapToDto(member);
     }
 
@@ -42,12 +43,12 @@ public class MemberService(IMemberRepository repository) : IMemberService
         {
             var existing = await repository.GetByEmailAsync(request.Email);
             if (existing is not null)
-                throw new KeyNotFoundException($"Email '{request.Email}' is already taken.");
+                throw new InvalidOperationException($"Email '{request.Email}' is already taken.");
         }
 
         member.Update(request.Name, request.Email);
         repository.Update(member);
-        await repository.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return MapToDto(member);
     }
@@ -61,7 +62,7 @@ public class MemberService(IMemberRepository repository) : IMemberService
         // we can't delete a member who has active loans
 
         repository.Delete(member);
-        await repository.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
     }
 
     private static MemberDto MapToDto(Member member) =>
