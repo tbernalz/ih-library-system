@@ -50,7 +50,6 @@ public class AuthorService(IAuthorRepository repository, IUnitOfWork unitOfWork)
         }
 
         author.Update(request.Name, request.Email, request.Bio);
-        repository.Update(author);
         await unitOfWork.SaveChangesAsync();
 
         return MapToDto(author);

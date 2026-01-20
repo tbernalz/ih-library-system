@@ -19,7 +19,5 @@ public abstract class BaseRepository<T>
 
     public virtual async Task AddAsync(T entity) => await DbSet.AddAsync(entity);
 
-    public virtual void Update(T entity) => DbSet.Update(entity);
-
     public virtual void Delete(T entity) => DbSet.Remove(entity);
 }

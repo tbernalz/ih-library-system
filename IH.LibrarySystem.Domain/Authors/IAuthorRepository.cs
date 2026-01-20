@@ -6,6 +6,5 @@ public interface IAuthorRepository
     Task<Author?> GetByEmailAsync(string email);
 
     Task AddAsync(Author author);
-    void Update(Author author);
     void Delete(Author author);
 }

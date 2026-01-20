@@ -67,7 +67,6 @@ public class BookService(
             );
 
         book.ChangeMetadata(request.Title, request.Isbn, request.Genre);
-        bookRepository.Update(book);
         await unitOfWork.SaveChangesAsync();
 
         return MapToDto(book);

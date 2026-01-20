@@ -47,7 +47,6 @@ public class MemberService(IMemberRepository repository, IUnitOfWork unitOfWork)
         }
 
         member.Update(request.Name, request.Email);
-        repository.Update(member);
         await unitOfWork.SaveChangesAsync();
 
         return MapToDto(member);

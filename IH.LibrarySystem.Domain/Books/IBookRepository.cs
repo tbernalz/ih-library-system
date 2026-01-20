@@ -6,6 +6,5 @@ public interface IBookRepository
     Task<Book?> GetByIsbnAsync(string isbn);
 
     Task AddAsync(Book book);
-    void Update(Book book);
     void Delete(Book book);
 }

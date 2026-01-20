@@ -6,6 +6,5 @@ public interface IMemberRepository
     Task<Member?> GetByEmailAsync(string email);
 
     Task AddAsync(Member member);
-    void Update(Member member);
     void Delete(Member member);
 }
