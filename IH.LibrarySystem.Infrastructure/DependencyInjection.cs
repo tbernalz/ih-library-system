@@ -2,6 +2,7 @@ using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Loans;
 using IH.LibrarySystem.Domain.Members;
+using IH.LibrarySystem.Domain.SharedKernel;
 using IH.LibrarySystem.Infrastructure.Data;
 using IH.LibrarySystem.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,8 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string not found.");
 
         services.AddDbContext<LibraryDbContext>(options => options.UseSqlServer(connectionString));
+
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<IAuthorRepository, AuthorRepository>();
         services.AddScoped<IBookRepository, BookRepository>();
