@@ -15,7 +15,7 @@ public class AuthorService(IAuthorRepository repository, IUnitOfWork unitOfWork)
         return MapToDto(author);
     }
 
-    public async Task<AuthorDto> CreateAuthorAsync(CreateAuthorRequestDto request)
+    public async Task<AuthorDto> CreateAuthorAsync(CreateAuthorRequest request)
     {
         var existing = await repository.GetByEmailAsync(request.Email);
 
@@ -29,7 +29,7 @@ public class AuthorService(IAuthorRepository repository, IUnitOfWork unitOfWork)
         return MapToDto(author);
     }
 
-    public async Task<AuthorDto> UpdateAuthorAsync(Guid authorId, UpdateAuthorRequestDto request)
+    public async Task<AuthorDto> UpdateAuthorAsync(Guid authorId, UpdateAuthorRequest request)
     {
         var author =
             await repository.GetByIdAsync(authorId)

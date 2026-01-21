@@ -16,14 +16,14 @@ public class BooksController(IBookService bookService) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<BookDto>> CreateBook(CreateBookRequestDto request)
+    public async Task<ActionResult<BookDto>> CreateBook(CreateBookRequest request)
     {
         var book = await bookService.CreateBookAsync(request);
         return CreatedAtAction(nameof(GetBook), new { id = book.Id }, book);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<BookDto>> UpdateBook(Guid id, UpdateBookRequestDto request)
+    public async Task<ActionResult<BookDto>> UpdateBook(Guid id, UpdateBookRequest request)
     {
         var book = await bookService.UpdateBookAsync(id, request);
         return Ok(book);

@@ -20,7 +20,7 @@ public class BookService(
         return MapToDto(book);
     }
 
-    public async Task<BookDto> CreateBookAsync(CreateBookRequestDto request)
+    public async Task<BookDto> CreateBookAsync(CreateBookRequest request)
     {
         var existingBook = await bookRepository.GetByIsbnAsync(request.Isbn);
 
@@ -48,7 +48,7 @@ public class BookService(
         return MapToDto(book);
     }
 
-    public async Task<BookDto> UpdateBookAsync(Guid bookId, UpdateBookRequestDto request)
+    public async Task<BookDto> UpdateBookAsync(Guid bookId, UpdateBookRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 

@@ -16,14 +16,14 @@ public class AuthorsController(IAuthorService authorService) : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<AuthorDto>> CreateAuthor(CreateAuthorRequestDto request)
+    public async Task<ActionResult<AuthorDto>> CreateAuthor(CreateAuthorRequest request)
     {
         var author = await authorService.CreateAuthorAsync(request);
         return CreatedAtAction(nameof(GetAuthor), new { id = author.Id }, author);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<AuthorDto>> UpdateAuthor(Guid id, UpdateAuthorRequestDto request)
+    public async Task<ActionResult<AuthorDto>> UpdateAuthor(Guid id, UpdateAuthorRequest request)
     {
         var author = await authorService.UpdateAuthorAsync(id, request);
         return Ok(author);

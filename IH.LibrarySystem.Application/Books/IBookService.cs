@@ -6,7 +6,7 @@ public interface IBookService
 {
     Task<BookDto> GetBookByIdAsync(Guid bookId);
 
-    Task<BookDto> CreateBookAsync(CreateBookRequestDto request);
-    Task<BookDto> UpdateBookAsync(Guid bookId, UpdateBookRequestDto request);
+    Task<BookDto> CreateBookAsync(CreateBookRequest request);
+    Task<BookDto> UpdateBookAsync(Guid bookId, UpdateBookRequest request);
     Task DeleteBookAsync(Guid bookId);
 }
