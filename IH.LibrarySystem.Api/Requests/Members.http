@@ -1,0 +1,19 @@
+@IH_LibrarySystem_Api_HostAddress = http://localhost:5192
+
+# @name registerMember
+POST {{IH_LibrarySystem_Api_HostAddress}}/api/members
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com"
+}
+
+###
+@memberId = {{registerMember.response.body.id}}
+
+GET {{IH_LibrarySystem_Api_HostAddress}}/api/members/{{memberId}}
+
+###
+
+DELETE {{IH_LibrarySystem_Api_HostAddress}}/api/members/{{memberId}}
