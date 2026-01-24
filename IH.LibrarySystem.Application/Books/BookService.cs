@@ -2,36 +2,49 @@ using IH.LibrarySystem.Application.Books.Dtos;
 using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.SharedKernel;
+using Microsoft.Extensions.Logging;
 
 namespace IH.LibrarySystem.Application.Books;
 
 public class BookService(
     IBookRepository bookRepository,
     IAuthorRepository authorRepository,
-    IUnitOfWork unitOfWork
+    IUnitOfWork unitOfWork,
+    ILogger<BookService> logger
 ) : IBookService
 {
     public async Task<BookDto> GetBookByIdAsync(Guid bookId)
     {
-        var book =
-            await bookRepository.GetByIdAsync(bookId)
-            ?? throw new KeyNotFoundException($"Book with ID {bookId} not found.");
+        logger.LogDebug("Fetching book {BookId}", bookId);
+
+        var book = await bookRepository.GetByIdAsync(bookId);
+        if (book is null)
+        {
+            logger.LogWarning("Book retrieval failed: ID {BookId} not found", bookId);
+            throw new KeyNotFoundException($"Book with ID {bookId} not found.");
+        }
 
         return MapToDto(book);
     }
 
     public async Task<BookDto> CreateBookAsync(CreateBookRequest request)
     {
+        logger.LogInformation("Initiating book creation: request {request}", request);
+
         var existingBook = await bookRepository.GetByIsbnAsync(request.Isbn);
 
-        if (existingBook != null)
+        if (existingBook is not null)
         {
+            logger.LogWarning("CreateBook rejected: Duplicate ISBN {Isbn}", request.Isbn);
             throw new InvalidOperationException($"Book with ISBN {request.Isbn} already exists.");
         }
 
-        var author =
-            await authorRepository.GetByIdAsync(request.AuthorId)
-            ?? throw new KeyNotFoundException($"Author with ID {request.AuthorId} not found.");
+        var author = await authorRepository.GetByIdAsync(request.AuthorId);
+        if (author is null)
+        {
+            logger.LogWarning("CreateBook failed: Author {AuthorId} not found", request.AuthorId);
+            throw new KeyNotFoundException($"Author with ID {request.AuthorId} not found.");
+        }
 
         var book = Book.Create(
             Guid.NewGuid(),
@@ -52,19 +65,32 @@ public class BookService(
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var book =
-            await bookRepository.GetByIdAsync(bookId)
-            ?? throw new KeyNotFoundException($"Book with ID {bookId} not found.");
+        logger.LogInformation("Initiating update for book: {BookId}", bookId);
+
+        var book = await bookRepository.GetByIdAsync(bookId);
+        if (book is null)
+        {
+            logger.LogWarning("UpdateBook failed: Book {BookId} not found", bookId);
+            throw new KeyNotFoundException($"Book with ID {bookId} not found.");
+        }
 
         if (request.Title == book.Title && request.Isbn == book.Isbn && request.Genre == book.Genre)
+        {
+            logger.LogInformation("UpdateBook: No changes detected for {BookId}", bookId);
             return MapToDto(book);
+        }
 
         var existingBook = await bookRepository.GetByIsbnAsync(request.Isbn);
 
         if (existingBook is not null && existingBook.Id != book.Id)
-            throw new InvalidOperationException(
-                $"ISBN '{request.Isbn}' is already taken by another book."
+        {
+            logger.LogWarning(
+                "UpdateBook failed: ISBN {Isbn} already used by {OtherBookId}",
+                request.Isbn,
+                existingBook.Id
             );
+            throw new InvalidOperationException($"ISBN '{request.Isbn}' is taken.");
+        }
 
         book.ChangeMetadata(request.Title, request.Isbn, request.Genre);
         await unitOfWork.SaveChangesAsync();
@@ -74,9 +100,14 @@ public class BookService(
 
     public async Task DeleteBookAsync(Guid bookId)
     {
-        var book =
-            await bookRepository.GetByIdAsync(bookId)
-            ?? throw new KeyNotFoundException($"Book with ID {bookId} not found.");
+        logger.LogInformation("Initiating book deletion: {BookId}", bookId);
+
+        var book = await bookRepository.GetByIdAsync(bookId);
+        if (book is null)
+        {
+            logger.LogWarning("DeleteBook failed: Book {BookId} not found", bookId);
+            throw new KeyNotFoundException($"Book with ID {bookId} not found.");
+        }
 
         bookRepository.Delete(book);
         await unitOfWork.SaveChangesAsync();
