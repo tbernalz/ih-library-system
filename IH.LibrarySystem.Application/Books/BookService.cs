@@ -120,6 +120,6 @@ public class BookService(
             Title = book.Title,
             Isbn = book.Isbn,
             Status = book.Status,
-            Author = null,
+            AuthorId = book.AuthorId,
         };
 }

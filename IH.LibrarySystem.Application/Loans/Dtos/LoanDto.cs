@@ -12,7 +12,4 @@ public record LoanDto
     public DateTime DueDate { get; init; }
     public DateTime? ReturnDate { get; init; }
     public decimal? FineAmount { get; init; }
-
-    public BookDto? Book { get; init; }
-    public MemberDto? Member { get; init; }
 }
