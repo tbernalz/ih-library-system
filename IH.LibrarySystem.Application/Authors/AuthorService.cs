@@ -1,5 +1,6 @@
 using IH.LibrarySystem.Application.Authors.Dtos;
 using IH.LibrarySystem.Domain.Authors;
+using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.SharedKernel;
 using Microsoft.Extensions.Logging;
 
@@ -7,6 +8,7 @@ namespace IH.LibrarySystem.Application.Authors;
 
 public class AuthorService(
     IAuthorRepository repository,
+    IBookRepository bookRepository,
     IUnitOfWork unitOfWork,
     ILogger<AuthorService> logger
 ) : IAuthorService
@@ -96,8 +98,20 @@ public class AuthorService(
         var author = await repository.GetByIdAsync(authorId);
         if (author is null)
         {
-            logger.LogWarning("DeleteAutho failed: Author {AuthorId} not found", authorId);
+            logger.LogWarning("DeleteAuthor failed: Author {AuthorId} not found", authorId);
             throw new KeyNotFoundException($"Author with ID {authorId} not found.");
+        }
+
+        var hasBooks = await bookRepository.HasBooksByAuthorIdAsync(authorId);
+        if (hasBooks)
+        {
+            logger.LogWarning(
+                "DeleteAuthor failed: Author {AuthorId} has associated books",
+                authorId
+            );
+            throw new InvalidOperationException(
+                $"Cannot delete author '{author.Name}' as they have associated books. Please delete or reassign the books first."
+            );
         }
 
         repository.Delete(author);

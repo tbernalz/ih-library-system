@@ -13,4 +13,9 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
     {
         return await DbSet.FirstOrDefaultAsync(b => b.Isbn == isbn);
     }
+
+    public async Task<bool> HasBooksByAuthorIdAsync(Guid authorId)
+    {
+        return await DbSet.AnyAsync(b => b.AuthorId == authorId);
+    }
 }
