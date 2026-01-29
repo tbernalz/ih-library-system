@@ -27,3 +27,11 @@ Content-Type: application/json
   "isbn": "9780618002245",
   "genre": "Fantasy - Updated"
 }
+
+###
+
+DELETE {{IH_LibrarySystem_Api_HostAddress}}/api/books/{{bookId}}
+
+###
+
+GET {{IH_LibrarySystem_Api_HostAddress}}/api/books/search?SearchTerm=woo&pageNumber=1&pageSize=10

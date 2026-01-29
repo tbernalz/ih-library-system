@@ -1,5 +1,6 @@
 using IH.LibrarySystem.Application.Books;
 using IH.LibrarySystem.Application.Books.Dtos;
+using IH.LibrarySystem.Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IH.LibrarySystem.Api.Controllers;
@@ -13,6 +14,15 @@ public class BooksController(IBookService bookService) : ControllerBase
     {
         var book = await bookService.GetBookByIdAsync(id);
         return Ok(book);
+    }
+
+    [HttpGet("search")]
+    public async Task<ActionResult<PagedResult<BookDto>>> SearchBooks(
+        [FromQuery] BookSearchRequest request
+    )
+    {
+        var result = await bookService.SearchBooksAsync(request);
+        return Ok(result);
     }
 
     [HttpPost]
