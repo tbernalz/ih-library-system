@@ -1,6 +1,7 @@
 using IH.LibrarySystem.Application.Books.Dtos;
 using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
+using IH.LibrarySystem.Domain.Common;
 using IH.LibrarySystem.Domain.SharedKernel;
 using Microsoft.Extensions.Logging;
 
@@ -25,6 +26,20 @@ public class BookService(
         }
 
         return MapToDto(book);
+    }
+
+    public async Task<PagedResult<BookDto>> SearchBooksAsync(BookSearchRequest request)
+    {
+        logger.LogDebug("Searching books with term: {SearchTerm}", request.SearchTerm);
+
+        var result = await bookRepository.SearchAsync(request.ToFilter());
+
+        return new PagedResult<BookDto>(
+            result.Items.Select(MapToDto),
+            result.TotalCount,
+            result.PageNumber,
+            result.PageSize
+        );
     }
 
     public async Task<BookDto> CreateBookAsync(CreateBookRequest request)
