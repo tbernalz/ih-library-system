@@ -1,4 +1,3 @@
-// using IH.LibrarySystem.Application.Books.Dtos;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Common;
 using IH.LibrarySystem.Infrastructure.Data;
@@ -32,13 +31,8 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
             );
         }
 
-        var totalCount = await query.CountAsync();
-        var items = await query
-            .OrderBy(b => b.Title)
-            .Skip((filter.PageNumber - 1) * filter.PageSize)
-            .Take(filter.PageSize)
-            .ToListAsync();
+        query = query.OrderBy(b => b.Title);
 
-        return new PagedResult<Book>(items, totalCount, filter.PageNumber, filter.PageSize);
+        return await GetPagedAsync(query, filter.PageNumber, filter.PageSize);
     }
 }

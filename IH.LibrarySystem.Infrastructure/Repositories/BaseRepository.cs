@@ -1,3 +1,4 @@
+using IH.LibrarySystem.Domain.Common;
 using IH.LibrarySystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,18 @@ public abstract class BaseRepository<T>
     }
 
     public virtual async Task<T?> GetByIdAsync(Guid id) => await DbSet.FindAsync(id);
+
+    protected async Task<PagedResult<T>> GetPagedAsync(
+        IQueryable<T> query,
+        int pageNumber,
+        int pageSize
+    )
+    {
+        var totalCount = await query.CountAsync();
+        var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        return new PagedResult<T>(items, totalCount, pageNumber, pageSize);
+    }
 
     public virtual async Task AddAsync(T entity) => await DbSet.AddAsync(entity);
 
