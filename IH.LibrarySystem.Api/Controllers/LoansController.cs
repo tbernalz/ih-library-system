@@ -14,4 +14,11 @@ public class LoansController(ILoanService loanService) : ControllerBase
         var loan = await loanService.GetLoanByIdAsync(id);
         return Ok(loan);
     }
+
+    [HttpPost("checkout")]
+    public async Task<ActionResult<LoanDto>> CheckoutBook(CheckoutBookRequest request)
+    {
+        var loan = await loanService.CheckoutBookAsync(request);
+        return CreatedAtAction(nameof(GetLoan), new { id = loan.Id }, loan);
+    }
 }
