@@ -55,4 +55,15 @@ public class Book : Entity
 
         SetUpdated();
     }
+
+    public void MarkAsLoaned()
+    {
+        if (Status != BookStatus.Available)
+            throw new InvalidOperationException(
+                $"Book {Id} is currently {Status} and cannot be loaned."
+            );
+
+        Status = BookStatus.Loaned;
+        SetUpdated();
+    }
 }
