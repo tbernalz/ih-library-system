@@ -1,3 +1,4 @@
+using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.SharedKernel;
 
 namespace IH.LibrarySystem.Domain.Loans;
@@ -11,6 +12,8 @@ public class Loan : Entity
     public DateTime DueDate { get; private set; }
     public DateTime? ReturnDate { get; private set; }
     public decimal? FineAmount { get; private set; }
+
+    public Book Book { get; private set; } = default!;
 
     private Loan()
         : base(Guid.Empty) { }

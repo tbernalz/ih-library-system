@@ -31,7 +31,7 @@ public class LoanConfiguration : IEntityTypeConfiguration<Loan>
         builder.Property(l => l.UpdatedAt);
 
         builder
-            .HasOne<Book>()
+            .HasOne(l => l.Book)
             .WithMany()
             .HasForeignKey(l => l.BookId)
             .OnDelete(DeleteBehavior.Restrict)
