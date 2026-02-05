@@ -9,6 +9,11 @@ public class LoanRepository : BaseRepository<Loan>, ILoanRepository
     public LoanRepository(LibraryDbContext context)
         : base(context) { }
 
+    public async Task<Loan?> GetWithBookAsync(Guid loanId)
+    {
+        return await Context.Loans.Include(l => l.Book).FirstOrDefaultAsync(l => l.Id == loanId);
+    }
+
     public async Task<Loan?> GetActiveLoanByBookIdAsync(Guid bookId)
     {
         return await DbSet.FirstOrDefaultAsync(l => l.BookId == bookId && l.ReturnDate == null);
