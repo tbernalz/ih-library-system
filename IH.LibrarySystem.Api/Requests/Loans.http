@@ -15,3 +15,14 @@ Content-Type: application/json
 @loanId = {{borrowBook.response.body.id}}
 
 GET {{IH_LibrarySystem_Api_HostAddress}}/api/loans/{{loanId}}
+
+###
+
+# @name returnBook
+POST {{IH_LibrarySystem_Api_HostAddress}}/api/loans/return/{{loanId}}
+Content-Type: application/json
+
+{
+  "LoanID": "{{loanId}}",
+  "returnDate": "2026-02-05T11:00:00Z"
+}
