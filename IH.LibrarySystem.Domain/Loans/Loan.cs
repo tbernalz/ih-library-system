@@ -37,4 +37,35 @@ public class Loan : Entity
         DateTime loanDate,
         DateTime dueDate
     ) => new(id, bookId, memberId, loanDate, dueDate);
+
+    public void MarkReturned(DateTime returnedAt, decimal dailyRate)
+    {
+        if (ReturnDate.HasValue)
+            throw new InvalidOperationException($"Book already returned on {ReturnDate:u}");
+
+        if (returnedAt < LoanDate)
+            throw new ArgumentException("Return date cannot be before loan date.");
+
+        ReturnDate = returnedAt;
+
+        FineAmount = CalculateFine(dailyRate);
+
+        SetUpdated();
+    }
+
+    public decimal CalculateFine(decimal dailyRate)
+    {
+        if (dailyRate < 0)
+            throw new ArgumentOutOfRangeException(nameof(dailyRate));
+
+        var current = ReturnDate ?? DateTime.UtcNow;
+        if (current.Date <= DueDate.Date)
+            return 0m;
+
+        var overdueDays = (current.Date - DueDate.Date).Days;
+        if (overdueDays <= 0)
+            return 0m;
+
+        return overdueDays * dailyRate;
+    }
 }

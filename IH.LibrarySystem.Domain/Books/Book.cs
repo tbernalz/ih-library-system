@@ -66,4 +66,15 @@ public class Book : Entity
         Status = BookStatus.Loaned;
         SetUpdated();
     }
+
+    public void MarkAsReturned()
+    {
+        if (Status is not (BookStatus.Loaned or BookStatus.Lost))
+        {
+            throw new InvalidOperationException($"Cannot return a book that is in {Status} state.");
+        }
+
+        Status = BookStatus.Available;
+        SetUpdated();
+    }
 }
