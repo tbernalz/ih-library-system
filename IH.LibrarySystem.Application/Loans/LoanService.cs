@@ -1,21 +1,24 @@
+using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Loans.Dtos;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Loans;
 using IH.LibrarySystem.Domain.Members;
 using IH.LibrarySystem.Domain.SharedKernel;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace IH.LibrarySystem.Application.Loans;
 
 public class LoanService(
     ILoanRepository loanRepository,
-    ILogger<LoanService> logger,
     IBookRepository bookRepository,
     IMemberRepository memberRepository,
-    IUnitOfWork unitOfWork
+    IUnitOfWork unitOfWork,
+    ILogger<LoanService> logger,
+    IOptions<LibrarySettings> settings
 ) : ILoanService
 {
-    private const int DefaultLoanDurationDays = 14;
+    private readonly LibrarySettings _settings = settings.Value;
 
     public async Task<LoanDto> GetLoanByIdAsync(Guid loanId)
     {
@@ -85,10 +88,39 @@ public class LoanService(
             bookId: book.Id,
             memberId: member.Id,
             loanDate: DateTime.UtcNow,
-            dueDate: DateTime.UtcNow.AddDays(DefaultLoanDurationDays)
+            dueDate: DateTime.UtcNow.AddDays(_settings.DefaultLoanDurationDays)
         );
 
         await loanRepository.AddAsync(loan);
+        await unitOfWork.SaveChangesAsync();
+
+        return MapToDto(loan);
+    }
+
+    public async Task<LoanDto> ReturnBookAsync(Guid loanId, ReturnBookRequest request)
+    {
+        var loan = await loanRepository.GetWithBookAsync(loanId);
+
+        if (loan is null)
+        {
+            logger.LogWarning("ReturnBookAsync failed: Loan {LoanId} not found", request.LoanId);
+            throw new KeyNotFoundException($"Loan with ID {request.LoanId} not found.");
+        }
+
+        var returnDate = request.ReturnDate ?? DateTime.UtcNow;
+
+        loan.MarkReturned(returnDate, _settings.DailyFineRate);
+        loan.Book.MarkAsReturned();
+
+        if (loan.FineAmount > 0)
+        {
+            logger.LogInformation(
+                "Fine of {Amount} generated for Loan {Id}. Payment record pending",
+                loan.FineAmount,
+                loan.Id
+            );
+        }
+
         await unitOfWork.SaveChangesAsync();
 
         return MapToDto(loan);
