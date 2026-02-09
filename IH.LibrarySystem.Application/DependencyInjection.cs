@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<ILoanService, LoanService>();
+        services.AddScoped<IAiService, AiService>();
 
         return services;
     }
