@@ -1,4 +1,5 @@
-﻿using IH.LibrarySystem.Application.Authors;
+﻿using IH.LibrarySystem.Application.Ai;
+using IH.LibrarySystem.Application.Authors;
 using IH.LibrarySystem.Application.Books;
 using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Loans;
@@ -20,6 +21,12 @@ public static class DependencyInjection
         services
             .AddOptions<LibrarySettings>()
             .Bind(configuration.GetSection(LibrarySettings.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services
+            .AddOptions<AiSettings>()
+            .Bind(configuration.GetSection(AiSettings.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
