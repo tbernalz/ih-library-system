@@ -1,0 +1,8 @@
+@IH_LibrarySystem_Api_HostAddress = http://localhost:5192
+
+POST {{IH_LibrarySystem_Api_HostAddress}}/api/ai/complete
+Content-Type: application/json
+
+{
+  "prompt": "What are the benefits of reading books regularly?"
+}
