@@ -1,3 +1,4 @@
+using IH.LibrarySystem.Application.Ai.Dtos;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -5,16 +6,16 @@ namespace IH.LibrarySystem.Application.Ai;
 
 public class AiService(IChatClient chatClient, ILogger<AiService> logger) : IAiService
 {
-    public async Task<string> CompleteAsync(string prompt)
+    public async Task<string> CompleteAsync(CompleteRequest request)
     {
         logger.LogDebug(
             "Processing AI completion request with prompt length: {PromptLength}",
-            prompt.Length
+            request.Prompt.Length
         );
 
         try
         {
-            var response = await chatClient.GetResponseAsync(prompt);
+            var response = await chatClient.GetResponseAsync(request.Prompt);
 
             string responseText = response.Messages[0].Text ?? string.Empty;
 
