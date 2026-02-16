@@ -1,3 +1,5 @@
+using IH.LibrarySystem.Domain.Common;
+
 namespace IH.LibrarySystem.Domain.Loans;
 
 public record LoanSearchFilter(
@@ -7,4 +9,4 @@ public record LoanSearchFilter(
     bool? IsOverdue = null,
     int PageNumber = 1,
     int PageSize = 10
-);
+) : PagedFilter(PageNumber, PageSize);
