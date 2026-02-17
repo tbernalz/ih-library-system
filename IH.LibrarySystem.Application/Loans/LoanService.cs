@@ -1,6 +1,7 @@
 using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Loans.Dtos;
 using IH.LibrarySystem.Domain.Books;
+using IH.LibrarySystem.Domain.Common;
 using IH.LibrarySystem.Domain.Loans;
 using IH.LibrarySystem.Domain.Members;
 using IH.LibrarySystem.Domain.SharedKernel;
@@ -19,6 +20,20 @@ public class LoanService(
 ) : ILoanService
 {
     private readonly LibrarySettings _settings = settings.Value;
+
+    public async Task<PagedResult<LoanDto>> GetLoansAsync(LoanSearchFilter filter)
+    {
+        logger.LogDebug("Searching loans with parameters: {@filter}", filter);
+
+        var pagedLoans = await loanRepository.SearchAsync(filter);
+
+        return new PagedResult<LoanDto>(
+            pagedLoans.Items.Select(MapToDto).ToList(),
+            pagedLoans.TotalCount,
+            pagedLoans.PageNumber,
+            pagedLoans.PageSize
+        );
+    }
 
     public async Task<LoanDto> GetLoanByIdAsync(Guid loanId)
     {
