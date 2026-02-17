@@ -1,5 +1,7 @@
 using IH.LibrarySystem.Application.Loans;
 using IH.LibrarySystem.Application.Loans.Dtos;
+using IH.LibrarySystem.Domain.Common;
+using IH.LibrarySystem.Domain.Loans;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IH.LibrarySystem.Api.Controllers;
@@ -8,6 +10,15 @@ namespace IH.LibrarySystem.Api.Controllers;
 [Route("api/[controller]")]
 public class LoansController(ILoanService loanService) : ControllerBase
 {
+    [HttpGet]
+    public async Task<ActionResult<PagedResult<LoanDto>>> GetLoans(
+        [FromQuery] LoanSearchFilter filter
+    )
+    {
+        var result = await loanService.GetLoansAsync(filter);
+        return Ok(result);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<LoanDto>> GetLoan(Guid id)
     {
