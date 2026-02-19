@@ -32,10 +32,11 @@ public class BookService(
     {
         logger.LogDebug("Searching books with term: {SearchTerm}", request.SearchTerm);
 
-        var result = await bookRepository.SearchAsync(request.ToFilter());
+        var filter = new BookSearchFilter(request.SearchTerm, request.PageNumber, request.PageSize);
+        var result = await bookRepository.SearchAsync(filter);
 
         return new PagedResult<BookDto>(
-            result.Items.Select(MapToDto),
+            result.Items.Select(MapToDto).ToList(),
             result.TotalCount,
             result.PageNumber,
             result.PageSize
