@@ -18,7 +18,7 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
 
         builder.Property(m => m.JoinDate).IsRequired();
 
-        builder.Property(m => m.Status).IsRequired().HasConversion<int>();
+        builder.Property(m => m.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
 
         builder.Property(m => m.CreatedAt).IsRequired();
 
