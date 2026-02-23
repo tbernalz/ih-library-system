@@ -35,4 +35,14 @@ public class MembersController(IMemberService memberService) : ControllerBase
         await memberService.DeleteMemberAsync(id);
         return NoContent();
     }
+
+    [HttpPatch("{id}/status")]
+    public async Task<ActionResult<MemberDto>> UpdateStatus(
+        Guid id,
+        [FromBody] UpdateStatusRequest request
+    )
+    {
+        var member = await memberService.UpdateStatusAsync(id, request);
+        return Ok(member);
+    }
 }
