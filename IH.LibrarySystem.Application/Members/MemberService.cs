@@ -106,6 +106,29 @@ public class MemberService(
         await unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<MemberDto> UpdateStatusAsync(Guid memberId, UpdateStatusRequest request)
+    {
+        logger.LogInformation(
+            "Updating status for member {MemberId} to {Status}",
+            memberId,
+            request.Status
+        );
+
+        var member = await repository.GetByIdAsync(memberId);
+
+        if (member is null)
+        {
+            logger.LogWarning("Status update failed: Member {MemberId} not found", memberId);
+            throw new KeyNotFoundException($"Member with ID {memberId} not found.");
+        }
+
+        member.UpdateStatus(request.Status);
+
+        await unitOfWork.SaveChangesAsync();
+
+        return MapToDto(member);
+    }
+
     private static MemberDto MapToDto(Member member) =>
         new()
         {

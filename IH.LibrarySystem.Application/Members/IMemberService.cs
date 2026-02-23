@@ -8,5 +8,6 @@ public interface IMemberService
 
     Task<MemberDto> RegisterMemberAsync(RegisterMemberRequest request);
     Task<MemberDto> UpdateMemberAsync(Guid memberId, UpdateMemberRequest request);
+    Task<MemberDto> UpdateStatusAsync(Guid memberId, UpdateStatusRequest request);
     Task DeleteMemberAsync(Guid memberId);
 }
