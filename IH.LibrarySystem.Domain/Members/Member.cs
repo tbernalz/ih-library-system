@@ -29,6 +29,18 @@ public class Member : Entity
 
     public bool CanBorrow() => Status == MemberStatus.Active;
 
+    public void UpdateStatus(MemberStatus newStatus)
+    {
+        if (Status == newStatus)
+            return;
+
+        if (Status == MemberStatus.Canceled)
+            throw new InvalidOperationException("Cannot change status of a canceled member.");
+
+        Status = newStatus;
+        SetUpdated();
+    }
+
     public void Update(string name, string email)
     {
         if (Name == name && Email == email)
