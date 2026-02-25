@@ -6,13 +6,32 @@ Content-Type: application/json
 
 {
   "name": "John Doe",
-  "email": "john.doe@example.com"
+  "email": "johnn.doe@example.com"
 }
 
 ###
 @memberId = {{registerMember.response.body.id}}
 
 GET {{IH_LibrarySystem_Api_HostAddress}}/api/members/{{memberId}}
+
+###
+
+PUT {{IH_LibrarySystem_Api_HostAddress}}/api/members/{{memberId}}
+Content-Type: application/json
+
+{
+  "name": "John Doe Updated",
+  "email": "johnn.doe.updated@example.com",
+  }
+
+###
+
+PATCH {{IH_LibrarySystem_Api_HostAddress}}/api/members/{{memberId}}/status
+Content-Type: application/json
+
+{
+  "status": "Suspended"
+}
 
 ###
 
