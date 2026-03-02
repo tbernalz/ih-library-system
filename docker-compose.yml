@@ -1,19 +1,19 @@
 version: "3.8"
 
 services:
-  sqlserver:
+  postgres-db:
     container_name: ih-library-system-db
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: postgres:17-alpine
     environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
-      - MSSQL_PID=Developer
+      - POSTGRES_USER=${POSTGRES_USER:-admin}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-IHLibrarySystem}
     ports:
-      - "${MSSQL_PORT:-1433}:1433"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - sql-data:/var/opt/mssql
+      - pg-data:/var/lib/postgresql/data
     restart: unless-stopped
 
 volumes:
-  sql-data:
+  pg-data:
     driver: local
