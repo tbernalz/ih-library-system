@@ -25,7 +25,9 @@ public static class DependencyInjection
             configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string not found.");
 
-        services.AddDbContext<LibraryDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContext<LibraryDbContext>(options =>
+            options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
+        );
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
