@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace IH.LibrarySystem.Infrastructure.Migrations
 {
     [DbContext(typeof(LibraryDbContext))]
-    [Migration("20260303000231_InitialSnakeCase")]
-    partial class InitialSnakeCase
+    [Migration("20260303002854_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,7 +64,7 @@ namespace IH.LibrarySystem.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_authors_email");
 
-                    b.ToTable("Authors", (string)null);
+                    b.ToTable("authors", (string)null);
                 });
 
             modelBuilder.Entity("IH.LibrarySystem.Domain.Books.Book", b =>
@@ -123,7 +123,7 @@ namespace IH.LibrarySystem.Infrastructure.Migrations
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_books_status");
 
-                    b.ToTable("Books", (string)null);
+                    b.ToTable("books", (string)null);
                 });
 
             modelBuilder.Entity("IH.LibrarySystem.Domain.Loans.Loan", b =>
@@ -184,7 +184,7 @@ namespace IH.LibrarySystem.Infrastructure.Migrations
                     b.HasIndex("BookId", "ReturnDate")
                         .HasDatabaseName("ix_loans_book_id_return_date");
 
-                    b.ToTable("Loans", (string)null);
+                    b.ToTable("loans", (string)null);
                 });
 
             modelBuilder.Entity("IH.LibrarySystem.Domain.Members.Member", b =>
@@ -234,7 +234,7 @@ namespace IH.LibrarySystem.Infrastructure.Migrations
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_members_status");
 
-                    b.ToTable("Members", (string)null);
+                    b.ToTable("members", (string)null);
                 });
 
             modelBuilder.Entity("IH.LibrarySystem.Domain.Books.Book", b =>

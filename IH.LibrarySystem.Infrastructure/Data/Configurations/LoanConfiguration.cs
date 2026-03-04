@@ -10,8 +10,6 @@ public class LoanConfiguration : IEntityTypeConfiguration<Loan>
 {
     public void Configure(EntityTypeBuilder<Loan> builder)
     {
-        builder.ToTable("Loans");
-
         builder.HasKey(l => l.Id);
 
         builder.Property(l => l.BookId).IsRequired();

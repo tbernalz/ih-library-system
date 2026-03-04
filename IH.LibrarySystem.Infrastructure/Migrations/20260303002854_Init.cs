@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace IH.LibrarySystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialSnakeCase : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Authors",
+                name: "authors",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -28,7 +28,7 @@ namespace IH.LibrarySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Members",
+                name: "members",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -45,7 +45,7 @@ namespace IH.LibrarySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Books",
+                name: "books",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -63,13 +63,13 @@ namespace IH.LibrarySystem.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "fk_books_authors_author_id",
                         column: x => x.author_id,
-                        principalTable: "Authors",
+                        principalTable: "authors",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Loans",
+                name: "loans",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -88,73 +88,73 @@ namespace IH.LibrarySystem.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "fk_loans_books_book_id",
                         column: x => x.book_id,
-                        principalTable: "Books",
+                        principalTable: "books",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "fk_loans_members_member_id",
                         column: x => x.member_id,
-                        principalTable: "Members",
+                        principalTable: "members",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
                 name: "ix_authors_email",
-                table: "Authors",
+                table: "authors",
                 column: "email",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_books_author_id",
-                table: "Books",
+                table: "books",
                 column: "author_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_books_isbn",
-                table: "Books",
+                table: "books",
                 column: "isbn",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_books_status",
-                table: "Books",
+                table: "books",
                 column: "status");
 
             migrationBuilder.CreateIndex(
                 name: "ix_loans_book_id",
-                table: "Loans",
+                table: "loans",
                 column: "book_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_loans_book_id_return_date",
-                table: "Loans",
+                table: "loans",
                 columns: new[] { "book_id", "return_date" });
 
             migrationBuilder.CreateIndex(
                 name: "ix_loans_due_date",
-                table: "Loans",
+                table: "loans",
                 column: "due_date");
 
             migrationBuilder.CreateIndex(
                 name: "ix_loans_loan_date",
-                table: "Loans",
+                table: "loans",
                 column: "loan_date");
 
             migrationBuilder.CreateIndex(
                 name: "ix_loans_member_id",
-                table: "Loans",
+                table: "loans",
                 column: "member_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_members_email",
-                table: "Members",
+                table: "members",
                 column: "email",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_members_status",
-                table: "Members",
+                table: "members",
                 column: "status");
         }
 
@@ -162,16 +162,16 @@ namespace IH.LibrarySystem.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Loans");
+                name: "loans");
 
             migrationBuilder.DropTable(
-                name: "Books");
+                name: "books");
 
             migrationBuilder.DropTable(
-                name: "Members");
+                name: "members");
 
             migrationBuilder.DropTable(
-                name: "Authors");
+                name: "authors");
         }
     }
 }
