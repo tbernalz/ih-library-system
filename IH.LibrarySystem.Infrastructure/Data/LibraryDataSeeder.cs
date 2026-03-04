@@ -28,14 +28,23 @@ public class LibraryDataSeeder(LibraryDbContext context)
             );
 
         var authors = authorFaker.Generate(100);
+        context.Authors.AddRange(authors);
+        await context.SaveChangesAsync();
 
         var memberFaker = new Faker<Member>()
             .UseSeed(seed)
             .CustomInstantiator(f =>
-                Member.Create(Guid.NewGuid(), f.Name.FullName(), f.Internet.Email(), f.Date.Past(1))
+                Member.Create(
+                    Guid.NewGuid(),
+                    f.Name.FullName(),
+                    f.Internet.Email(),
+                    f.Date.Past(1).ToUniversalTime()
+                )
             );
 
         var members = memberFaker.Generate(20);
+        context.Members.AddRange(members);
+        await context.SaveChangesAsync();
 
         var bookFaker = new Faker<Book>()
             .UseSeed(seed)
@@ -50,27 +59,25 @@ public class LibraryDataSeeder(LibraryDbContext context)
             );
 
         var books = bookFaker.Generate(50);
-
-        context.AddRange(authors);
-        context.AddRange(members);
-        context.AddRange(books);
+        context.Books.AddRange(books);
         await context.SaveChangesAsync();
 
         var loanFaker = new Faker<Loan>()
             .UseSeed(seed)
             .CustomInstantiator(f =>
             {
-                var loanDate = f.Date.Recent(30);
+                var loanDate = f.Date.Recent(30).ToUniversalTime();
                 return Loan.Create(
                     Guid.NewGuid(),
                     f.PickRandom(books).Id,
                     f.PickRandom(members).Id,
                     loanDate,
-                    loanDate.AddDays(14)
+                    loanDate.AddDays(14).ToUniversalTime()
                 );
             });
 
-        context.AddRange(loanFaker.Generate(15));
+        var loans = loanFaker.Generate(15);
+        context.Loans.AddRange(loans);
         await context.SaveChangesAsync();
     }
 }
