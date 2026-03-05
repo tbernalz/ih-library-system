@@ -5,11 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IH.LibrarySystem.Infrastructure.Repositories;
 
-public class BookRepository : BaseRepository<Book>, IBookRepository
+public class BookRepository(LibraryDbContext context)
+    : BaseRepository<Book>(context),
+        IBookRepository
 {
-    public BookRepository(LibraryDbContext context)
-        : base(context) { }
-
     public async Task<Book?> GetByIsbnAsync(string isbn)
     {
         return await DbSet.FirstOrDefaultAsync(b => b.Isbn == isbn);
@@ -22,17 +21,17 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
 
     public async Task<PagedResult<Book>> SearchAsync(BookSearchFilter filter)
     {
-        var query = DbSet.AsNoTracking().AsQueryable();
+        var query = DbSet.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
         {
-            query = query.Where(b =>
-                b.Title.Contains(filter.SearchTerm) || b.Isbn.Contains(filter.SearchTerm)
-            );
+            var term = filter.SearchTerm.Trim();
+
+            query = query.Where(b => EF.Functions.ILike(b.Title, $"%{term}%") || b.Isbn == term);
         }
 
-        query = query.OrderBy(b => b.Title);
+        var orderedQuery = query.OrderBy(b => b.Title).ThenBy(b => b.Id);
 
-        return await GetPagedAsync(query, filter.PageNumber, filter.PageSize);
+        return await GetPagedAsync(orderedQuery, filter.PageNumber, filter.PageSize);
     }
 }

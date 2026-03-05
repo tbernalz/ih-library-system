@@ -4,17 +4,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IH.LibrarySystem.Infrastructure.Repositories;
 
-public class MemberRepository : BaseRepository<Member>, IMemberRepository
+public class MemberRepository(LibraryDbContext context)
+    : BaseRepository<Member>(context),
+        IMemberRepository
 {
-    public MemberRepository(LibraryDbContext context)
-        : base(context) { }
-
     public async Task<Member?> GetByEmailAsync(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
             return null;
 
-        var lowerEmail = email.ToLower();
-        return await DbSet.FirstOrDefaultAsync(m => m.Email.ToLower() == lowerEmail);
+        return await DbSet.FirstOrDefaultAsync(m => EF.Functions.ILike(m.Email, email));
     }
 }
