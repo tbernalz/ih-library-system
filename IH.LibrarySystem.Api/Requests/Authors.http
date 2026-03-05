@@ -8,7 +8,7 @@ Content-Type: application/json
 {
   "name": "J. R. R. Tolkien",
   "email": "jrr@tolkien.com",
-  "bio": "English writer and philologist.."
+  "bio": "English writer and philologist."
 }
 
 ###

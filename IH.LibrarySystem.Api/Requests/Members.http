@@ -6,7 +6,7 @@ Content-Type: application/json
 
 {
   "name": "John Doe",
-  "email": "johnn.doe@example.com"
+  "email": "john.doe@example.com"
 }
 
 ###
@@ -21,7 +21,7 @@ Content-Type: application/json
 
 {
   "name": "John Doe Updated",
-  "email": "johnn.doe.updated@example.com",
+  "email": "johnn.doe.updated@example.com"
   }
 
 ###
