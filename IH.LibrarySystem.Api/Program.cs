@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using IH.LibrarySystem.Api.Extensions;
 using IH.LibrarySystem.Api.Middleware;
 using IH.LibrarySystem.Application;
 using IH.LibrarySystem.Infrastructure;
@@ -29,13 +30,12 @@ app.UseExceptionHandler();
 
 app.UseStatusCodePages();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.MapOpenApi();
-    await app.ApplyMigrationsAndSeedAsync();
-}
+// For portfolio visibility:
+// if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI();
+app.MapOpenApi();
+await app.ApplyMigrationsAndSeedAsync();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
