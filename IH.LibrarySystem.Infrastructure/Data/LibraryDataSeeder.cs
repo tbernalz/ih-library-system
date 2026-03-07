@@ -4,20 +4,46 @@ using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Loans;
 using IH.LibrarySystem.Domain.Members;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace IH.LibrarySystem.Infrastructure.Data;
 
-public class LibraryDataSeeder(LibraryDbContext context)
+public class LibraryDataSeeder(LibraryDbContext context, ILogger<LibraryDataSeeder> logger)
 {
+    private const int SeedValue = 42;
+
     public async Task SeedAsync()
     {
-        if (await context.Books.AnyAsync())
+        var strategy = context.Database.CreateExecutionStrategy();
+
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+                await SeedAuthorsAsync();
+                await SeedMembersAsync();
+                await SeedBooksAsync();
+                await SeedLoansAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Seeding failed. Transaction rolled back automatically.");
+
+                throw;
+            }
+        });
+    }
+
+    private async Task SeedAuthorsAsync()
+    {
+        if (await context.Authors.AnyAsync())
             return;
 
-        var seed = 42;
-
-        var authorFaker = new Faker<Author>()
-            .UseSeed(seed)
+        var faker = new Faker<Author>()
+            .UseSeed(SeedValue)
             .CustomInstantiator(f =>
                 Author.Create(
                     Guid.NewGuid(),
@@ -27,12 +53,19 @@ public class LibraryDataSeeder(LibraryDbContext context)
                 )
             );
 
-        var authors = authorFaker.Generate(100);
-        context.Authors.AddRange(authors);
-        await context.SaveChangesAsync();
+        var authors = faker.Generate(100);
+        await context.Authors.AddRangeAsync(authors);
 
-        var memberFaker = new Faker<Member>()
-            .UseSeed(seed)
+        await context.SaveChangesAsync();
+    }
+
+    private async Task SeedMembersAsync()
+    {
+        if (await context.Members.AnyAsync())
+            return;
+
+        var faker = new Faker<Member>()
+            .UseSeed(SeedValue)
             .CustomInstantiator(f =>
                 Member.Create(
                     Guid.NewGuid(),
@@ -42,42 +75,64 @@ public class LibraryDataSeeder(LibraryDbContext context)
                 )
             );
 
-        var members = memberFaker.Generate(20);
-        context.Members.AddRange(members);
+        var members = faker.Generate(20);
+        await context.Members.AddRangeAsync(members);
         await context.SaveChangesAsync();
+    }
 
-        var bookFaker = new Faker<Book>()
-            .UseSeed(seed)
+    private async Task SeedBooksAsync()
+    {
+        if (await context.Books.AnyAsync())
+            return;
+
+        var authorIds = await context.Authors.Select(a => a.Id).ToListAsync();
+        if (authorIds.Count == 0)
+            return;
+
+        var faker = new Faker<Book>()
+            .UseSeed(SeedValue)
             .CustomInstantiator(f =>
                 Book.Create(
                     Guid.NewGuid(),
                     f.Commerce.ProductName(),
                     f.Commerce.Ean13(),
-                    f.PickRandom(authors).Id,
+                    f.PickRandom(authorIds),
                     f.Music.Genre()
                 )
             );
 
-        var books = bookFaker.Generate(50);
-        context.Books.AddRange(books);
+        var books = faker.Generate(50);
+        await context.Books.AddRangeAsync(books);
         await context.SaveChangesAsync();
+    }
 
-        var loanFaker = new Faker<Loan>()
-            .UseSeed(seed)
+    private async Task SeedLoansAsync()
+    {
+        if (await context.Loans.AnyAsync())
+            return;
+
+        var bookIds = await context.Books.Select(b => b.Id).ToListAsync();
+        var memberIds = await context.Members.Select(m => m.Id).ToListAsync();
+
+        if (!bookIds.Any() || !memberIds.Any())
+            return;
+
+        var faker = new Faker<Loan>()
+            .UseSeed(SeedValue)
             .CustomInstantiator(f =>
             {
                 var loanDate = f.Date.Recent(30).ToUniversalTime();
                 return Loan.Create(
                     Guid.NewGuid(),
-                    f.PickRandom(books).Id,
-                    f.PickRandom(members).Id,
+                    f.PickRandom(bookIds),
+                    f.PickRandom(memberIds),
                     loanDate,
                     loanDate.AddDays(14).ToUniversalTime()
                 );
             });
 
-        var loans = loanFaker.Generate(15);
-        context.Loans.AddRange(loans);
+        var loans = faker.Generate(15);
+        await context.Loans.AddRangeAsync(loans);
         await context.SaveChangesAsync();
     }
 }
