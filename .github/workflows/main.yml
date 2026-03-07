@@ -60,3 +60,6 @@ jobs:
 
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Deploy to Render
+        run: curl -f ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
