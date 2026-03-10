@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://ih-library-system.onrender.com
+      url: https://ih-library-system.onrender.com/api
     permissions:
       contents: read
       id-token: write
