@@ -141,6 +141,30 @@ public class LoanService(
         return MapToDto(loan);
     }
 
+    public async Task DeleteLoanAsync(Guid loanId)
+    {
+        logger.LogInformation("Initiating loan deletion: {LoanId}", loanId);
+
+        var loan = await loanRepository.GetByIdAsync(loanId);
+
+        if (loan is null)
+        {
+            logger.LogWarning("DeleteLoan failed: Loan {LoanId} not found", loanId);
+            throw new KeyNotFoundException($"Loan with ID {loanId} not found.");
+        }
+
+        if (loan.ReturnDate is null)
+        {
+            logger.LogWarning("DeleteLoan failed: Loan {LoanId} has not been returned yet", loanId);
+            throw new InvalidOperationException(
+                $"Loan with ID {loanId} has not been returned yet."
+            );
+        }
+
+        loanRepository.Delete(loan);
+        await unitOfWork.SaveChangesAsync();
+    }
+
     private static LoanDto MapToDto(Loan loan) =>
         new()
         {

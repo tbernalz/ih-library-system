@@ -12,4 +12,6 @@ public interface ILoanService
     Task<LoanDto> CheckoutBookAsync(CheckoutBookRequest request);
 
     Task<LoanDto> ReturnBookAsync(Guid loanId, ReturnBookRequest request);
+
+    Task DeleteLoanAsync(Guid loanId);
 }
