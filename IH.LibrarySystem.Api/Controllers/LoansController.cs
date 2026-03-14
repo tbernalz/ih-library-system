@@ -39,4 +39,11 @@ public class LoansController(ILoanService loanService) : ControllerBase
         var loan = await loanService.ReturnBookAsync(loanId, request);
         return Ok(loan);
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteLoan(Guid id)
+    {
+        await loanService.DeleteLoanAsync(id);
+        return NoContent();
+    }
 }
