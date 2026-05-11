@@ -24,10 +24,15 @@ Content-Type: application/json
 
 {
   "LoanId": "{{loanId}}",
-  "returnDate": "2026-02-05T11:00:00Z"
+  "returnDate": "2026-06-05T11:00:00Z"
 }
 
 ###
 
 # @name getLoansWithFilter
 GET {{IH_LibrarySystem_Api_HostAddress}}/api/loans?memberId={{memberId}}&bookId={{bookId}}&isActive=false&isOverdue=false&pageNumber=1&pageSize=10
+
+###
+
+# @name deleteLoan
+DELETE {{IH_LibrarySystem_Api_HostAddress}}/api/loans/{{loanId}}
