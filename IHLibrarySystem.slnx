@@ -3,4 +3,5 @@
   <Project Path="IH.LibrarySystem.Application/IH.LibrarySystem.Application.csproj" />
   <Project Path="IH.LibrarySystem.Domain/IH.LibrarySystem.Domain.csproj" />
   <Project Path="IH.LibrarySystem.Infrastructure/IH.LibrarySystem.Infrastructure.csproj" />
+  <Project Path="IH.LibrarySystem.Application.Tests/IH.LibrarySystem.Application.Tests.csproj" />
 </Solution>
