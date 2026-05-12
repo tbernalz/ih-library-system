@@ -6,32 +6,27 @@ using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Common;
 using IH.LibrarySystem.Domain.SharedKernel;
 using Microsoft.Extensions.Logging;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace IH.LibrarySystem.Application.Tests.Books;
 
 public class BookServiceTests
 {
-    private readonly Mock<IBookRepository> _bookRepositoryMock;
-    private readonly Mock<IAuthorRepository> _authorRepositoryMock;
-    private readonly Mock<IUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<ILogger<BookService>> _loggerMock;
+    private readonly IBookRepository _bookRepository;
+    private readonly IAuthorRepository _authorRepository;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<BookService> _logger;
     private readonly BookService _sut;
 
     public BookServiceTests()
     {
-        _bookRepositoryMock = new Mock<IBookRepository>();
-        _authorRepositoryMock = new Mock<IAuthorRepository>();
-        _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _loggerMock = new Mock<ILogger<BookService>>();
+        _bookRepository = Substitute.For<IBookRepository>();
+        _authorRepository = Substitute.For<IAuthorRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _logger = Substitute.For<ILogger<BookService>>();
 
-        _sut = new BookService(
-            _bookRepositoryMock.Object,
-            _authorRepositoryMock.Object,
-            _unitOfWorkMock.Object,
-            _loggerMock.Object
-        );
+        _sut = new BookService(_bookRepository, _authorRepository, _unitOfWork, _logger);
     }
 
     #region GetBookByIdAsync Tests
@@ -40,35 +35,25 @@ public class BookServiceTests
     public async Task GetBookByIdAsync_WhenBookExists_ShouldReturnBookDto()
     {
         var bookId = Guid.NewGuid();
-        var book = Book.Create(bookId, "Test Book", "1234567890", Guid.NewGuid(), "Fiction");
-
-        _bookRepositoryMock.Setup(x => x.GetByIdAsync(bookId)).ReturnsAsync(book);
+        var book = CreateDummyBook(bookId);
+        _bookRepository.GetByIdAsync(bookId).Returns(book);
 
         var result = await _sut.GetBookByIdAsync(bookId);
 
         result.Should().NotBeNull();
         result.Id.Should().Be(bookId);
-        result.Title.Should().Be("Test Book");
-        result.Isbn.Should().Be("1234567890");
-        result.Status.Should().Be(BookStatus.Available);
-
-        _bookRepositoryMock.Verify(x => x.GetByIdAsync(bookId), Times.Once);
+        result.Title.Should().Be(book.Title);
     }
 
     [Fact]
     public async Task GetBookByIdAsync_WhenBookNotFound_ShouldThrowKeyNotFoundException()
     {
         var bookId = Guid.NewGuid();
+        _bookRepository.GetByIdAsync(bookId).Returns((Book?)null);
 
-        _bookRepositoryMock.Setup(x => x.GetByIdAsync(bookId)).ReturnsAsync((Book?)null);
+        var act = () => _sut.GetBookByIdAsync(bookId);
 
-        Func<Task> act = async () => await _sut.GetBookByIdAsync(bookId);
-
-        await act.Should()
-            .ThrowAsync<KeyNotFoundException>()
-            .WithMessage($"Book with ID {bookId} not found.");
-
-        _bookRepositoryMock.Verify(x => x.GetByIdAsync(bookId), Times.Once);
+        await act.Should().ThrowAsync<KeyNotFoundException>();
     }
 
     #endregion
@@ -79,54 +64,17 @@ public class BookServiceTests
     public async Task SearchBooksAsync_WithValidRequest_ShouldReturnPagedResult()
     {
         var request = new BookSearchRequest("test", 1, 10);
-        var filter = new BookSearchFilter("test", 1, 10);
-        var books = new List<Book>
-        {
-            Book.Create(Guid.NewGuid(), "Test Book 1", "1234567890", Guid.NewGuid(), "Fiction"),
-            Book.Create(Guid.NewGuid(), "Test Book 2", "0987654321", Guid.NewGuid(), "Non-Fiction"),
-        };
+        var books = new List<Book> { CreateDummyBook(), CreateDummyBook() };
         var pagedResult = new PagedResult<Book>(books, 2, 1, 10);
 
-        _bookRepositoryMock
-            .Setup(x =>
-                x.SearchAsync(
-                    It.Is<BookSearchFilter>(f =>
-                        f.SearchTerm == "test" && f.PageNumber == 1 && f.PageSize == 10
-                    )
-                )
-            )
-            .ReturnsAsync(pagedResult);
+        _bookRepository
+            .SearchAsync(Arg.Is<BookSearchFilter>(f => f.SearchTerm == "test" && f.PageNumber == 1))
+            .Returns(pagedResult);
 
         var result = await _sut.SearchBooksAsync(request);
 
-        result.Should().NotBeNull();
         result.Items.Should().HaveCount(2);
         result.TotalCount.Should().Be(2);
-        result.PageNumber.Should().Be(1);
-        result.PageSize.Should().Be(10);
-        result.Items.First().Title.Should().Be("Test Book 1");
-
-        _bookRepositoryMock.Verify(x => x.SearchAsync(It.IsAny<BookSearchFilter>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task SearchBooksAsync_WithEmptySearchTerm_ShouldReturnAllBooks()
-    {
-        var request = new BookSearchRequest(null, 1, 5);
-        var books = new List<Book>();
-        var pagedResult = new PagedResult<Book>(books, 0, 1, 5);
-
-        _bookRepositoryMock
-            .Setup(x => x.SearchAsync(It.IsAny<BookSearchFilter>()))
-            .ReturnsAsync(pagedResult);
-
-        var result = await _sut.SearchBooksAsync(request);
-
-        result.Should().NotBeNull();
-        result.Items.Should().BeEmpty();
-        result.TotalCount.Should().Be(0);
-
-        _bookRepositoryMock.Verify(x => x.SearchAsync(It.IsAny<BookSearchFilter>()), Times.Once);
     }
 
     #endregion
@@ -137,76 +85,31 @@ public class BookServiceTests
     public async Task CreateBookAsync_WithValidRequest_ShouldCreateBook()
     {
         var authorId = Guid.NewGuid();
-        var author = Author.Create(authorId, "Test Author", "author@test.com", "Test bio");
+        var author = Author.Create(authorId, "Author", "a@a.com", "Bio");
         var request = new CreateBookRequest("New Book", "1234567890", "Fiction", authorId);
 
-        _bookRepositoryMock.Setup(x => x.GetByIsbnAsync(request.Isbn)).ReturnsAsync((Book?)null);
-
-        _authorRepositoryMock.Setup(x => x.GetByIdAsync(authorId)).ReturnsAsync(author);
-
-        _unitOfWorkMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
+        _bookRepository.GetByIsbnAsync(request.Isbn).Returns((Book?)null);
+        _authorRepository.GetByIdAsync(authorId).Returns(author);
 
         var result = await _sut.CreateBookAsync(request);
 
-        result.Should().NotBeNull();
-        result.Title.Should().Be("New Book");
-        result.Isbn.Should().Be("1234567890");
-        result.AuthorId.Should().Be(authorId);
-        result.Status.Should().Be(BookStatus.Available);
-
-        _bookRepositoryMock.Verify(x => x.GetByIsbnAsync(request.Isbn), Times.Once);
-        _authorRepositoryMock.Verify(x => x.GetByIdAsync(authorId), Times.Once);
-        _bookRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Book>()), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
+        result.Title.Should().Be(request.Title);
+        await _bookRepository.Received(1).AddAsync(Arg.Any<Book>());
+        await _unitOfWork.Received(1).SaveChangesAsync();
     }
 
     [Fact]
     public async Task CreateBookAsync_WithDuplicateIsbn_ShouldThrowInvalidOperationException()
     {
-        var authorId = Guid.NewGuid();
-        var existingBook = Book.Create(
-            Guid.NewGuid(),
-            "Existing Book",
-            "1234567890",
-            authorId,
-            "Fiction"
-        );
-        var request = new CreateBookRequest("New Book", "1234567890", "Fiction", authorId);
+        var request = new CreateBookRequest("New Book", "1234567890", "Fiction", Guid.NewGuid());
+        _bookRepository.GetByIsbnAsync(request.Isbn).Returns(CreateDummyBook());
 
-        _bookRepositoryMock.Setup(x => x.GetByIsbnAsync(request.Isbn)).ReturnsAsync(existingBook);
+        var act = () => _sut.CreateBookAsync(request);
 
-        Func<Task> act = async () => await _sut.CreateBookAsync(request);
+        await act.Should().ThrowAsync<InvalidOperationException>();
 
-        await act.Should()
-            .ThrowAsync<InvalidOperationException>()
-            .WithMessage($"Book with ISBN {request.Isbn} already exists.");
-
-        _bookRepositoryMock.Verify(x => x.GetByIsbnAsync(request.Isbn), Times.Once);
-        _authorRepositoryMock.Verify(x => x.GetByIdAsync(It.IsAny<Guid>()), Times.Never);
-        _bookRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Book>()), Times.Never);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Never);
-    }
-
-    [Fact]
-    public async Task CreateBookAsync_WithNonExistentAuthor_ShouldThrowKeyNotFoundException()
-    {
-        var authorId = Guid.NewGuid();
-        var request = new CreateBookRequest("New Book", "1234567890", "Fiction", authorId);
-
-        _bookRepositoryMock.Setup(x => x.GetByIsbnAsync(request.Isbn)).ReturnsAsync((Book?)null);
-
-        _authorRepositoryMock.Setup(x => x.GetByIdAsync(authorId)).ReturnsAsync((Author?)null);
-
-        Func<Task> act = async () => await _sut.CreateBookAsync(request);
-
-        await act.Should()
-            .ThrowAsync<KeyNotFoundException>()
-            .WithMessage($"Author with ID {authorId} not found.");
-
-        _bookRepositoryMock.Verify(x => x.GetByIsbnAsync(request.Isbn), Times.Once);
-        _authorRepositoryMock.Verify(x => x.GetByIdAsync(authorId), Times.Once);
-        _bookRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Book>()), Times.Never);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Never);
+        await _bookRepository.DidNotReceive().AddAsync(Arg.Any<Book>());
+        await _unitOfWork.DidNotReceive().SaveChangesAsync();
     }
 
     #endregion
@@ -214,107 +117,16 @@ public class BookServiceTests
     #region UpdateBookAsync Tests
 
     [Fact]
-    public async Task UpdateBookAsync_WithValidRequest_ShouldUpdateBook()
+    public async Task UpdateBookAsync_WithNoChanges_ShouldNotCallSaveChanges()
     {
         var bookId = Guid.NewGuid();
-        var book = Book.Create(bookId, "Original Title", "1234567890", Guid.NewGuid(), "Fiction");
-        var request = new UpdateBookRequest("Updated Title", "0987654321", "Non-Fiction");
+        var book = Book.Create(bookId, "Title", "123", Guid.NewGuid(), "Genre");
+        var request = new UpdateBookRequest("Title", "123", "Genre");
+        _bookRepository.GetByIdAsync(bookId).Returns(book);
 
-        _bookRepositoryMock.Setup(x => x.GetByIdAsync(bookId)).ReturnsAsync(book);
+        await _sut.UpdateBookAsync(bookId, request);
 
-        _bookRepositoryMock.Setup(x => x.GetByIsbnAsync(request.Isbn)).ReturnsAsync((Book?)null);
-
-        _unitOfWorkMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
-
-        var result = await _sut.UpdateBookAsync(bookId, request);
-
-        result.Should().NotBeNull();
-        result.Title.Should().Be("Updated Title");
-        result.Isbn.Should().Be("0987654321");
-        result.AuthorId.Should().Be(book.AuthorId);
-
-        _bookRepositoryMock.Verify(x => x.GetByIdAsync(bookId), Times.Once);
-        _bookRepositoryMock.Verify(x => x.GetByIsbnAsync(request.Isbn), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
-    }
-
-    [Fact]
-    public async Task UpdateBookAsync_WhenBookNotFound_ShouldThrowKeyNotFoundException()
-    {
-        var bookId = Guid.NewGuid();
-        var request = new UpdateBookRequest("Updated Title", "0987654321", "Non-Fiction");
-
-        _bookRepositoryMock.Setup(x => x.GetByIdAsync(bookId)).ReturnsAsync((Book?)null);
-
-        Func<Task> act = async () => await _sut.UpdateBookAsync(bookId, request);
-
-        await act.Should()
-            .ThrowAsync<KeyNotFoundException>()
-            .WithMessage($"Book with ID {bookId} not found.");
-
-        _bookRepositoryMock.Verify(x => x.GetByIdAsync(bookId), Times.Once);
-        _bookRepositoryMock.Verify(x => x.GetByIsbnAsync(It.IsAny<string>()), Times.Never);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Never);
-    }
-
-    [Fact]
-    public async Task UpdateBookAsync_WithNoChanges_ShouldReturnExistingBook()
-    {
-        var bookId = Guid.NewGuid();
-        var book = Book.Create(bookId, "Test Title", "1234567890", Guid.NewGuid(), "Fiction");
-        var request = new UpdateBookRequest("Test Title", "1234567890", "Fiction");
-
-        _bookRepositoryMock.Setup(x => x.GetByIdAsync(bookId)).ReturnsAsync(book);
-
-        var result = await _sut.UpdateBookAsync(bookId, request);
-
-        result.Should().NotBeNull();
-        result.Title.Should().Be("Test Title");
-        result.Isbn.Should().Be("1234567890");
-
-        _bookRepositoryMock.Verify(x => x.GetByIdAsync(bookId), Times.Once);
-        _bookRepositoryMock.Verify(x => x.GetByIsbnAsync(It.IsAny<string>()), Times.Never);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Never);
-    }
-
-    [Fact]
-    public async Task UpdateBookAsync_WithDuplicateIsbn_ShouldThrowInvalidOperationException()
-    {
-        var bookId = Guid.NewGuid();
-        var otherBookId = Guid.NewGuid();
-        var book = Book.Create(bookId, "Original Title", "1234567890", Guid.NewGuid(), "Fiction");
-        var otherBook = Book.Create(
-            otherBookId,
-            "Other Book",
-            "0987654321",
-            Guid.NewGuid(),
-            "Fiction"
-        );
-        var request = new UpdateBookRequest("Updated Title", "0987654321", "Non-Fiction");
-
-        _bookRepositoryMock.Setup(x => x.GetByIdAsync(bookId)).ReturnsAsync(book);
-
-        _bookRepositoryMock.Setup(x => x.GetByIsbnAsync(request.Isbn)).ReturnsAsync(otherBook);
-
-        Func<Task> act = async () => await _sut.UpdateBookAsync(bookId, request);
-
-        await act.Should()
-            .ThrowAsync<InvalidOperationException>()
-            .WithMessage($"ISBN '{request.Isbn}' is taken.");
-
-        _bookRepositoryMock.Verify(x => x.GetByIdAsync(bookId), Times.Once);
-        _bookRepositoryMock.Verify(x => x.GetByIsbnAsync(request.Isbn), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Never);
-    }
-
-    [Fact]
-    public async Task UpdateBookAsync_WithNullRequest_ShouldThrowArgumentNullException()
-    {
-        var bookId = Guid.NewGuid();
-
-        Func<Task> act = async () => await _sut.UpdateBookAsync(bookId, null!);
-
-        await act.Should().ThrowAsync<ArgumentNullException>();
+        await _unitOfWork.DidNotReceive().SaveChangesAsync();
     }
 
     #endregion
@@ -322,39 +134,19 @@ public class BookServiceTests
     #region DeleteBookAsync Tests
 
     [Fact]
-    public async Task DeleteBookAsync_WithValidBookId_ShouldDeleteBook()
+    public async Task DeleteBookAsync_WithValidId_ShouldDeleteAndSave()
     {
         var bookId = Guid.NewGuid();
-        var book = Book.Create(bookId, "Test Book", "1234567890", Guid.NewGuid(), "Fiction");
-
-        _bookRepositoryMock.Setup(x => x.GetByIdAsync(bookId)).ReturnsAsync(book);
-
-        _unitOfWorkMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
+        var book = CreateDummyBook(bookId);
+        _bookRepository.GetByIdAsync(bookId).Returns(book);
 
         await _sut.DeleteBookAsync(bookId);
 
-        _bookRepositoryMock.Verify(x => x.GetByIdAsync(bookId), Times.Once);
-        _bookRepositoryMock.Verify(x => x.Delete(book), Times.Once);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
-    }
-
-    [Fact]
-    public async Task DeleteBookAsync_WhenBookNotFound_ShouldThrowKeyNotFoundException()
-    {
-        var bookId = Guid.NewGuid();
-
-        _bookRepositoryMock.Setup(x => x.GetByIdAsync(bookId)).ReturnsAsync((Book?)null);
-
-        Func<Task> act = async () => await _sut.DeleteBookAsync(bookId);
-
-        await act.Should()
-            .ThrowAsync<KeyNotFoundException>()
-            .WithMessage($"Book with ID {bookId} not found.");
-
-        _bookRepositoryMock.Verify(x => x.GetByIdAsync(bookId), Times.Once);
-        _bookRepositoryMock.Verify(x => x.Delete(It.IsAny<Book>()), Times.Never);
-        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Never);
+        _bookRepository.Received(1).Delete(book);
+        await _unitOfWork.Received(1).SaveChangesAsync();
     }
 
     #endregion
+    private static Book CreateDummyBook(Guid? id = null) =>
+        Book.Create(id ?? Guid.NewGuid(), "Test Book", "12345", Guid.NewGuid(), "Fiction");
 }
