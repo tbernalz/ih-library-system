@@ -1,15 +1,19 @@
 using IH.LibrarySystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 
 namespace IH.LibrarySystem.Api.Extensions;
 
 public static class MigrationExtensions
 {
+    public const string IntegrationTestingEnvironment = "IntegrationTesting";
+
     public static async Task ApplyMigrationsAndSeedAsync(this IApplicationBuilder app)
     {
         using IServiceScope scope = app.ApplicationServices.CreateScope();
 
         var services = scope.ServiceProvider;
+        var hostEnvironment = services.GetRequiredService<IHostEnvironment>();
         var context = services.GetRequiredService<LibraryDbContext>();
         var logger = services.GetRequiredService<ILogger<LibraryDbContext>>();
         var seeder = services.GetRequiredService<LibraryDataSeeder>();
@@ -54,8 +58,15 @@ public static class MigrationExtensions
                 }
             }
 
-            logger.LogInformation("Applying data seeding...");
-            await seeder.SeedAsync();
+            if (hostEnvironment.IsEnvironment(IntegrationTestingEnvironment))
+            {
+                logger.LogInformation("Skipping data seeding in {Environment}.", hostEnvironment.EnvironmentName);
+            }
+            else
+            {
+                logger.LogInformation("Applying data seeding...");
+                await seeder.SeedAsync();
+            }
 
             logger.LogInformation("Database migration and seeding completed successfully.");
         }
