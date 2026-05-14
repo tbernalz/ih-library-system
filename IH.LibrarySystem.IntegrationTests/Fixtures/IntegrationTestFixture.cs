@@ -1,4 +1,5 @@
 using IH.LibrarySystem.Api.Extensions;
+using IH.LibrarySystem.IntegrationTests.Stubs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -89,6 +90,7 @@ internal sealed class LibraryWebApplicationFactory : WebApplicationFactory<Progr
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IChatClient>();
+            services.AddSingleton<IChatClient, StubChatClient>();
         });
     }
 }
