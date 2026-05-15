@@ -19,6 +19,7 @@ The IH Library System is an API designed to manage library operations efficientl
 - [📚 Tech Stack](#-tech-stack)
 - [📦 Setup and Installation](#-setup-and-installation)
 - [📁 Project Structure](#-project-structure)
+- [🧪 Testing](#-testing)
 - [🔧 API Documentation](#-api-documentation)
 - [📄 License](#-license)
 - [✉️ Contact](#️-contact)
@@ -99,14 +100,74 @@ The IH Library System is an API designed to manage library operations efficientl
 
 ```
 IHLibrarySystem/
-├── IH.LibrarySystem.Api/           # Web API layer
-├── IH.LibrarySystem.Application/   # Business logic layer
-├── IH.LibrarySystem.Domain/        # Core domain layer
-├── IH.LibrarySystem.Infrastructure/ # Data access layer
-├── docker-compose.yml              # Database container setup
-├── Dockerfile                      # Application containerization
-└── README.md                       # This file
+├── IH.LibrarySystem.Api/                    # Web API layer
+├── IH.LibrarySystem.Application/            # Business logic layer
+├── IH.LibrarySystem.Application.Tests/      # Unit tests for Application layer
+├── IH.LibrarySystem.Domain/                 # Core domain layer
+├── IH.LibrarySystem.Infrastructure/         # Data access layer
+├── IH.LibrarySystem.IntegrationTests/       # Integration tests
+├── docker-compose.yml                       # Database container setup
+├── Dockerfile                               # Application containerization
+└── README.md                                # This file
 ```
+
+## 🧪 Testing
+
+The project includes comprehensive test coverage with both unit tests and integration tests.
+
+### Unit Tests (Application Layer)
+
+Unit tests are located in `IH.LibrarySystem.Application.Tests` and test the business logic layer in isolation:
+
+- **AiServiceTests**: Tests for AI service functionality
+- **AuthorServiceTests**: Tests for author management operations
+- **BookServiceTests**: Tests for book management operations
+
+Run unit tests:
+
+```bash
+dotnet test IH.LibrarySystem.Application.Tests
+```
+
+### Integration Tests
+
+Integration tests are located in `IH.LibrarySystem.IntegrationTests` and test the entire application stack including database interactions:
+
+- **AiIntegrationTests**: AI service integration tests
+- **AuthorIntegrationTests**: Author management integration tests
+- **BookIntegrationTests**: Book management integration tests
+- **LoanIntegrationTests**: Loan system integration tests
+- **MemberIntegrationTests**: Member management integration tests
+
+Integration tests use a test database and require the PostgreSQL container to be running.
+
+Run integration tests:
+
+```bash
+# Ensure database is running
+docker compose up -d
+
+# Run integration tests
+dotnet test IH.LibrarySystem.IntegrationTests
+```
+
+### Run All Tests
+
+To run all tests in the solution:
+
+```bash
+dotnet test
+```
+
+### Test Coverage
+
+The test suite covers:
+
+- CRUD operations for books and authors
+- AI-powered features and recommendations
+- Loan management and fine calculation
+- Search and filtering functionality
+- Error handling and edge cases
 
 ## 🔧 API Documentation
 
