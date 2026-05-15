@@ -2,6 +2,7 @@ using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Pgvector;
 
 namespace IH.LibrarySystem.Infrastructure.Data.Configurations;
 
@@ -24,6 +25,10 @@ public class BookConfiguration : IEntityTypeConfiguration<Book>
         builder.Property(b => b.CreatedAt).IsRequired();
 
         builder.Property(b => b.UpdatedAt);
+
+        builder
+            .Property<Vector>(BookVectorEmbedding.PropertyName)
+            .HasColumnType($"vector({BookVectorSchema.Dimensions})");
 
         builder
             .HasOne<Author>()
