@@ -3,7 +3,7 @@ version: "3.8"
 services:
   postgres-db:
     container_name: ih-library-system-db
-    image: postgres:17-alpine
+    image: pgvector/pgvector:pg17
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-admin}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}

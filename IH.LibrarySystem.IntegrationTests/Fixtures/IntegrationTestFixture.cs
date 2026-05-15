@@ -14,7 +14,9 @@ namespace IH.LibrarySystem.IntegrationTests.Fixtures;
 
 public sealed class IntegrationTestFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder().Build();
+    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
+        .WithImage("pgvector/pgvector:pg16")
+        .Build();
 
     private LibraryWebApplicationFactory? _factory;
 
@@ -82,6 +84,8 @@ internal sealed class LibraryWebApplicationFactory : WebApplicationFactory<Progr
 
         builder.UseSetting("ConnectionStrings:DefaultConnection", _connectionString);
 
+        builder.UseSetting("Discovery:EnableBackgroundIngestion", "false");
+
         builder.UseSetting("AiSettings:Provider", "openrouter");
         builder.UseSetting("AiSettings:Model", "integration-test");
         builder.UseSetting("AiSettings:ApiKey", "test-key");
@@ -91,6 +95,12 @@ internal sealed class LibraryWebApplicationFactory : WebApplicationFactory<Progr
         {
             services.RemoveAll<IChatClient>();
             services.AddSingleton<IChatClient, StubChatClient>();
+
+            services.RemoveAll<IEmbeddingGenerator<string, Embedding<float>>>();
+            services.AddSingleton<
+                IEmbeddingGenerator<string, Embedding<float>>,
+                StubEmbeddingGenerator
+            >();
         });
     }
 }
