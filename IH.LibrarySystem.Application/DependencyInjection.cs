@@ -2,6 +2,7 @@
 using IH.LibrarySystem.Application.Authors;
 using IH.LibrarySystem.Application.Books;
 using IH.LibrarySystem.Application.Configuration;
+using IH.LibrarySystem.Application.Discovery;
 using IH.LibrarySystem.Application.Loans;
 using IH.LibrarySystem.Application.Members;
 using Microsoft.Extensions.Configuration;
@@ -30,11 +31,19 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services
+            .AddOptions<DiscoverySettings>()
+            .Bind(configuration.GetSection(DiscoverySettings.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddScoped<IAuthorService, AuthorService>();
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IMemberService, MemberService>();
         services.AddScoped<ILoanService, LoanService>();
         services.AddScoped<IAiService, AiService>();
+
+        services.AddHostedService<BookVectorIngestionHostedService>();
 
         return services;
     }

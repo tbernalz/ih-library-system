@@ -12,8 +12,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.1" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.1.0-*" />
+    <PackageReference Include="Microsoft.Extensions.VectorData.Abstractions" Version="10.6.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     <PackageReference Include="OllamaSharp" Version="5.4.16" />
+    <PackageReference Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
   </ItemGroup>
 
   <PropertyGroup>
