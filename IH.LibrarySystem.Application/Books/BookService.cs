@@ -1,4 +1,5 @@
 using IH.LibrarySystem.Application.Books.Dtos;
+using IH.LibrarySystem.Application.Discovery;
 using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Common;
@@ -10,6 +11,7 @@ namespace IH.LibrarySystem.Application.Books;
 public class BookService(
     IBookRepository bookRepository,
     IAuthorRepository authorRepository,
+    DiscoveryIngestionQueue discoveryIngestionQueue,
     IUnitOfWork unitOfWork,
     ILogger<BookService> logger
 ) : IBookService
@@ -73,6 +75,8 @@ public class BookService(
 
         await bookRepository.AddAsync(book);
         await unitOfWork.SaveChangesAsync();
+
+        await discoveryIngestionQueue.NotifyNewBookAsync();
 
         return MapToDto(book);
     }

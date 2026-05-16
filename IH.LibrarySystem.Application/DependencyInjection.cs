@@ -45,6 +45,8 @@ public static class DependencyInjection
 
         services.AddHostedService<BookVectorIngestionHostedService>();
 
+        services.AddSingleton<DiscoveryIngestionQueue>();
+
         return services;
     }
 }

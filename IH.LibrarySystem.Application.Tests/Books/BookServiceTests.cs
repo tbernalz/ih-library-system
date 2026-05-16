@@ -1,6 +1,7 @@
 using FluentAssertions;
 using IH.LibrarySystem.Application.Books;
 using IH.LibrarySystem.Application.Books.Dtos;
+using IH.LibrarySystem.Application.Discovery;
 using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Common;
@@ -16,6 +17,7 @@ public class BookServiceTests
     private readonly IBookRepository _bookRepository;
     private readonly IAuthorRepository _authorRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly DiscoveryIngestionQueue _discoveryIngestionQueue;
     private readonly ILogger<BookService> _logger;
     private readonly BookService _sut;
 
@@ -23,10 +25,17 @@ public class BookServiceTests
     {
         _bookRepository = Substitute.For<IBookRepository>();
         _authorRepository = Substitute.For<IAuthorRepository>();
+        _discoveryIngestionQueue = new();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _logger = Substitute.For<ILogger<BookService>>();
 
-        _sut = new BookService(_bookRepository, _authorRepository, _unitOfWork, _logger);
+        _sut = new BookService(
+            _bookRepository,
+            _authorRepository,
+            _discoveryIngestionQueue,
+            _unitOfWork,
+            _logger
+        );
     }
 
     #region GetBookByIdAsync Tests
