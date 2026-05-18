@@ -29,37 +29,4 @@ public sealed class AiIntegrationTests : BaseIntegrationTest
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(SerializerOptions);
         json.GetProperty("response").GetString().Should().StartWith("stub-response:");
     }
-
-    [Fact]
-    public async Task SummarizeBook_returns_summary_payload()
-    {
-        var response = await Client.PostAsJsonAsync(
-            "/api/ai/summarize-book",
-            new SummarizeBookRequest("Dune", "A desert planet, spice, and politics."),
-            SerializerOptions
-        );
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var json = await response.Content.ReadFromJsonAsync<JsonElement>(SerializerOptions);
-        json.GetProperty("summary").GetString().Should().NotBeNullOrWhiteSpace();
-    }
-
-    [Fact]
-    public async Task RecommendBooks_returns_recommendations_payload()
-    {
-        var response = await Client.PostAsJsonAsync(
-            "/api/ai/recommend-books",
-            new RecommendBooksRequest(
-                "I enjoy hard sci-fi with strong world building.",
-                new[] { "Science Fiction", "Space Opera" }
-            ),
-            SerializerOptions
-        );
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var json = await response.Content.ReadFromJsonAsync<JsonElement>(SerializerOptions);
-        json.GetProperty("recommendations").GetString().Should().NotBeNullOrWhiteSpace();
-    }
 }

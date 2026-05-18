@@ -8,7 +8,9 @@ using IH.LibrarySystem.Domain.Members;
 using IH.LibrarySystem.Infrastructure.Data;
 using IH.LibrarySystem.IntegrationTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
+using Pgvector;
 
 namespace IH.LibrarySystem.IntegrationTests.Abstractions;
 
@@ -132,5 +134,34 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
             .Loans.AsNoTracking()
             .FirstOrDefaultAsync(l => l.Id == id)
             .ConfigureAwait(false);
+    }
+
+    protected async Task<Guid> PersistBookWithEmbeddingAsync(
+        string title,
+        string isbn,
+        string genre,
+        Guid authorId
+    )
+    {
+        using var scope = Fixture.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
+        var embeddingGenerator = scope.ServiceProvider.GetRequiredService<
+            IEmbeddingGenerator<string, Embedding<float>>
+        >();
+
+        var book = Book.Create(Guid.NewGuid(), title, isbn, authorId, genre);
+        db.Books.Add(book);
+        await db.SaveChangesAsync().ConfigureAwait(false);
+
+        var embeddingText = $"{title} {genre}";
+        var embeddingResult = await embeddingGenerator.GenerateAsync([embeddingText]);
+        var embedding = embeddingResult[0].Vector.ToArray();
+
+        db.Entry(book).Property(BookVectorEmbedding.PropertyName).CurrentValue = new Vector(
+            embedding
+        );
+        await db.SaveChangesAsync().ConfigureAwait(false);
+
+        return book.Id;
     }
 }
