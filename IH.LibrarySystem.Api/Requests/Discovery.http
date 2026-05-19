@@ -1,0 +1,11 @@
+@IH_LibrarySystem_Api_HostAddress = http://localhost:5192
+
+# @name chat
+POST {{IH_LibrarySystem_Api_HostAddress}}/api/discovery/chat
+Content-Type: application/json
+
+{
+  "query": "Find me fantasy books about magic"
+}
+
+###
