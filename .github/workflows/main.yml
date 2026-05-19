@@ -11,36 +11,19 @@ env:
   DOCKERFILE_PATH: IH.LibrarySystem.Api/Dockerfile
 
 jobs:
-  generate-version:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    outputs:
-      new_tag: ${{ steps.bump-version.outputs.new_tag }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Bump version and push tag
-        id: bump-version
-        uses: anothrNick/github-tag-action@1.64.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: false
-          DEFAULT_BUMP: minor
-
   build-publish-deploy:
-    needs: generate-version
     runs-on: ubuntu-latest
     environment:
       name: production
       url: https://ih-library-system.onrender.com/api
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -51,7 +34,15 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Build and push
+      - name: Bump version and push tag
+        id: bump-version
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          DEFAULT_BUMP: minor
+
+      - name: Build and push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -59,9 +50,9 @@ jobs:
           push: true
           tags: |
             ${{ env.DOCKER_USER }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.DOCKER_USER }}/${{ env.IMAGE_NAME }}:${{ needs.generate-version.outputs.new_tag }}
+            ${{ env.DOCKER_USER }}/${{ env.IMAGE_NAME }}:${{ steps.bump-version.outputs.new_tag }}
 
-          cache-from: type=gha
+            cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Deploy to Render
