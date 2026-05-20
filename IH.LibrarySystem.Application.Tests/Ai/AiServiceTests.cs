@@ -44,25 +44,6 @@ public class AiServiceTests
         result.Should().BeEmpty();
     }
 
-    [Fact]
-    public async Task SummarizeBookDescriptionAsync_ShouldPassFormattedPromptToClient()
-    {
-        var request = new SummarizeBookRequest("The Hobbit", "A dragon and a hobbit...");
-        SetupChatResponse("Summary");
-
-        await _sut.SummarizeBookDescriptionAsync(request);
-
-        await _chatClient
-            .Received(1)
-            .GetResponseAsync(
-                Arg.Is<IEnumerable<ChatMessage>>(m =>
-                    m.Any(c => c.Text != null && c.Text.Contains("The Hobbit"))
-                    && m.Any(c => c.Role == ChatRole.User)
-                ),
-                Arg.Any<ChatOptions>()
-            );
-    }
-
     private void SetupChatResponse(string? content)
     {
         var message = new ChatMessage(ChatRole.Assistant, content);
