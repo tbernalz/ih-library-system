@@ -1,14 +1,20 @@
 using Bogus;
+using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Loans;
 using IH.LibrarySystem.Domain.Members;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace IH.LibrarySystem.Infrastructure.Data;
 
-public class LibraryDataSeeder(LibraryDbContext context, ILogger<LibraryDataSeeder> logger)
+public class LibraryDataSeeder(
+    LibraryDbContext context,
+    ILogger<LibraryDataSeeder> logger,
+    IOptions<SeedingSettings> seedingSettings
+)
 {
     private const int SeedValue = 42;
 
@@ -64,16 +70,21 @@ public class LibraryDataSeeder(LibraryDbContext context, ILogger<LibraryDataSeed
         if (await context.Members.AnyAsync())
             return;
 
+        var seededDomain = seedingSettings.Value.SeededEmailDomain;
+
         var faker = new Faker<Member>()
             .UseSeed(SeedValue)
             .CustomInstantiator(f =>
-                Member.Create(
+            {
+                var username = f.Internet.UserName();
+                var email = $"{username}{seededDomain}";
+                return Member.Create(
                     Guid.NewGuid(),
                     f.Name.FullName(),
-                    f.Internet.Email(),
+                    email,
                     f.Date.Past(1).ToUniversalTime()
-                )
-            );
+                );
+            });
 
         var members = faker.Generate(20);
         await context.Members.AddRangeAsync(members);
