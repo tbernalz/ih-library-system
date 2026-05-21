@@ -37,6 +37,12 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services
+            .AddOptions<SeedingSettings>()
+            .Bind(configuration.GetSection(SeedingSettings.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddScoped<IAuthorService, AuthorService>();
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IMemberService, MemberService>();
