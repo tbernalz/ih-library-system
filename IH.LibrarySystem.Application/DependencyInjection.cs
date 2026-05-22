@@ -38,6 +38,12 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         services
+            .AddOptions<SendGridSettings>()
+            .Bind(configuration.GetSection(SendGridSettings.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services
             .AddOptions<SeedingSettings>()
             .Bind(configuration.GetSection(SeedingSettings.SectionName))
             .ValidateDataAnnotations()

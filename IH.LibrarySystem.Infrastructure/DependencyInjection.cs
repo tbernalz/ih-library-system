@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OllamaSharp;
 using Pgvector.EntityFrameworkCore;
+using SendGrid;
 
 namespace IH.LibrarySystem.Infrastructure;
 
@@ -34,6 +35,14 @@ public static class DependencyInjection
         );
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        var sendGridApiKey =
+            configuration["SendGrid:ApiKey"]
+            ?? throw new InvalidOperationException(
+                "SendGrid API Key is missing from configuration."
+            );
+
+        services.AddSingleton<ISendGridClient>(new SendGridClient(sendGridApiKey));
 
         services.AddScoped<IAuthorRepository, AuthorRepository>();
         services.AddScoped<IBookRepository, BookRepository>();
