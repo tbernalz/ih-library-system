@@ -3,6 +3,7 @@ using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Loans;
 using IH.LibrarySystem.Domain.Members;
+using IH.LibrarySystem.Domain.Notifications;
 using IH.LibrarySystem.Domain.SharedKernel;
 using IH.LibrarySystem.Infrastructure.Data;
 using IH.LibrarySystem.Infrastructure.Repositories;
@@ -49,6 +50,7 @@ public static class DependencyInjection
         services.AddScoped<IBookDiscoveryRepository, BookDiscoveryRepository>();
         services.AddScoped<IMemberRepository, MemberRepository>();
         services.AddScoped<ILoanRepository, LoanRepository>();
+        services.AddScoped<INotificationLogRepository, NotificationLogRepository>();
         services.AddScoped<LibraryDataSeeder>();
 
         services.AddLibraryAiClient(configuration);
