@@ -5,6 +5,7 @@ using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Discovery;
 using IH.LibrarySystem.Application.Loans;
 using IH.LibrarySystem.Application.Members;
+using IH.LibrarySystem.Application.Notifications;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -57,6 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IDiscoveryService, DiscoveryService>();
 
         services.AddHostedService<BookVectorIngestionHostedService>();
+        services.AddHostedService<OverdueLoanScannerHostedService>();
 
         services.AddSingleton<DiscoveryIngestionQueue>();
 
