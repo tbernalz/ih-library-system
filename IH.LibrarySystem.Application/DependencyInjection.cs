@@ -56,6 +56,7 @@ public static class DependencyInjection
         services.AddScoped<ILoanService, LoanService>();
         services.AddScoped<IAiService, AiService>();
         services.AddScoped<IDiscoveryService, DiscoveryService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         services.AddHostedService<BookVectorIngestionHostedService>();
         services.AddHostedService<OverdueLoanScannerHostedService>();
