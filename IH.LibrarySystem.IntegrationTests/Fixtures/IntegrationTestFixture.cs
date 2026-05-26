@@ -1,4 +1,5 @@
 using IH.LibrarySystem.Api.Extensions;
+using IH.LibrarySystem.Application.Notifications;
 using IH.LibrarySystem.IntegrationTests.Stubs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -101,6 +102,9 @@ internal sealed class LibraryWebApplicationFactory : WebApplicationFactory<Progr
                 IEmbeddingGenerator<string, Embedding<float>>,
                 StubEmbeddingGenerator
             >();
+
+            services.RemoveAll<IEmailNotificationService>();
+            services.AddSingleton<IEmailNotificationService, StubEmailNotificationService>();
         });
     }
 }

@@ -5,6 +5,7 @@ using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Loans;
 using IH.LibrarySystem.Domain.Members;
+using IH.LibrarySystem.Domain.Notifications;
 using IH.LibrarySystem.Infrastructure.Data;
 using IH.LibrarySystem.IntegrationTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
@@ -124,6 +125,43 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
         using var scope = Fixture.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
         return await db.Loans.AnyAsync(l => l.Id == id).ConfigureAwait(false);
+    }
+
+    protected async Task<Guid> PersistLoanAsync(
+        Guid bookId,
+        Guid memberId,
+        DateTime loanDate,
+        DateTime dueDate
+    )
+    {
+        using var scope = Fixture.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
+        var loan = Loan.Create(Guid.NewGuid(), bookId, memberId, loanDate, dueDate);
+        db.Loans.Add(loan);
+        await db.SaveChangesAsync().ConfigureAwait(false);
+        return loan.Id;
+    }
+
+    protected async Task<NotificationLog?> GetNotificationLogAsync(
+        Guid loanId,
+        NotificationType type
+    )
+    {
+        using var scope = Fixture.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
+        return await db
+            .NotificationLogs.AsNoTracking()
+            .FirstOrDefaultAsync(n => n.LoanId == loanId && n.Type == type)
+            .ConfigureAwait(false);
+    }
+
+    protected async Task<bool> NotificationLogExistsAsync(Guid loanId, NotificationType type)
+    {
+        using var scope = Fixture.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<LibraryDbContext>();
+        return await db
+            .NotificationLogs.AnyAsync(n => n.LoanId == loanId && n.Type == type)
+            .ConfigureAwait(false);
     }
 
     protected async Task<Loan?> GetLoanEntityAsync(Guid id)
