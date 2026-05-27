@@ -57,6 +57,11 @@ The IH Library System is an API designed to manage library operations efficientl
 - **PostgreSQL 17** - Robust relational database
 - **Docker Compose** - Database containerization
 
+### Deployment
+
+- **Render** - Cloud platform for deployment
+- **Supabase** - Database and authentication
+
 ## 📦 Setup and Installation
 
 ### Prerequisites
