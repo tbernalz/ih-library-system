@@ -34,6 +34,14 @@ The IH Library System is an API designed to manage library operations efficientl
 - **Search & Filter**: Advanced search capabilities across books and authors
 - **Status Tracking**: Real-time book availability status
 
+### 🤖 AI-Powered Discovery (RAG)
+
+- **Semantic Search**: Vector-based similarity search for finding books by meaning, not just keywords
+- **AI Chat Assistant**: RAG-powered chat interface that provides intelligent book recommendations
+- **Automatic Indexing**: Background service that automatically generates embeddings for new books
+- **Vector Embeddings**: Uses OpenAI text-embedding-3-small model for high-quality semantic representations
+- **Contextual Responses**: AI explains why each recommended book matches the user's query
+
 ### 🔧 Technical Features
 
 - **Clean Architecture**: Separation of concerns with dependency injection
@@ -61,6 +69,13 @@ The IH Library System is an API designed to manage library operations efficientl
 
 - **Render** - Cloud platform for deployment
 - **Supabase** - Database and authentication
+
+### AI Integration
+
+- **OpenRouter API** - AI model provider
+- **GPT Models** - Natural language processing
+- **Vector Embeddings** - OpenAI text-embedding-3-small for semantic search
+- **RAG Architecture** - Retrieval-Augmented Generation for intelligent responses
 
 ## 📦 Setup and Installation
 
