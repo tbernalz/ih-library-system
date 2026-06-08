@@ -1,3 +1,4 @@
+using IH.LibrarySystem.Application.Common.Exceptions;
 using IH.LibrarySystem.Application.Members.Dtos;
 using IH.LibrarySystem.Domain.Members;
 using IH.LibrarySystem.Domain.SharedKernel;
@@ -20,7 +21,7 @@ public class MemberService(
         if (member is null)
         {
             logger.LogWarning("Member retrieval failed: ID {MemberId} not found", memberId);
-            throw new KeyNotFoundException($"Member with ID {memberId} not found.");
+            throw new NotFoundException(nameof(Member), memberId);
         }
 
         return MapToDto(member);
@@ -35,7 +36,12 @@ public class MemberService(
         if (existing is not null)
         {
             logger.LogWarning("RegisterMember rejected: Duplicate email: {Email}", request.Email);
-            throw new InvalidOperationException($"Email '{request.Email}' is already registered.");
+            var validationException = new ValidationException();
+            validationException.AddError(
+                "Email",
+                $"Email '{request.Email}' is already registered."
+            );
+            throw validationException;
         }
 
         var member = Member.Create(Guid.NewGuid(), request.Name, request.Email);
@@ -59,7 +65,7 @@ public class MemberService(
         if (member is null)
         {
             logger.LogWarning("UpdateMember failed: Member {MemberId} not found", memberId);
-            throw new KeyNotFoundException($"Member with ID {memberId} not found.");
+            throw new NotFoundException(nameof(Member), memberId);
         }
 
         if (request.Name == member.Name && request.Email == member.Email)
@@ -78,7 +84,9 @@ public class MemberService(
                     memberId,
                     request.Email
                 );
-                throw new InvalidOperationException($"Email '{request.Email}' is already taken.");
+                var validationException = new ValidationException();
+                validationException.AddError("Email", $"Email '{request.Email}' is already taken.");
+                throw validationException;
             }
         }
 
@@ -97,7 +105,7 @@ public class MemberService(
         if (member is null)
         {
             logger.LogWarning("DeleteMember failed: Member {MemberId} not found", memberId);
-            throw new KeyNotFoundException($"Member with ID {memberId} not found.");
+            throw new NotFoundException(nameof(Member), memberId);
         }
 
         // we can't delete a member who has active loans
@@ -119,7 +127,7 @@ public class MemberService(
         if (member is null)
         {
             logger.LogWarning("Status update failed: Member {MemberId} not found", memberId);
-            throw new KeyNotFoundException($"Member with ID {memberId} not found.");
+            throw new NotFoundException(nameof(Member), memberId);
         }
 
         member.UpdateStatus(request.Status);
