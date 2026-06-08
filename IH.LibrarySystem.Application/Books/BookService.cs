@@ -1,4 +1,5 @@
 using IH.LibrarySystem.Application.Books.Dtos;
+using IH.LibrarySystem.Application.Common.Exceptions;
 using IH.LibrarySystem.Application.Discovery;
 using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
@@ -24,7 +25,7 @@ public class BookService(
         if (book is null)
         {
             logger.LogWarning("Book retrieval failed: ID {BookId} not found", bookId);
-            throw new KeyNotFoundException($"Book with ID {bookId} not found.");
+            throw new NotFoundException(nameof(Book), bookId);
         }
 
         return MapToDto(book);
@@ -54,14 +55,19 @@ public class BookService(
         if (existingBook is not null)
         {
             logger.LogWarning("CreateBook rejected: Duplicate ISBN {Isbn}", request.Isbn);
-            throw new InvalidOperationException($"Book with ISBN {request.Isbn} already exists.");
+            var validationException = new ValidationException();
+            validationException.AddError(
+                "Isbn",
+                $"Book with ISBN '{request.Isbn}' already exists."
+            );
+            throw validationException;
         }
 
         var author = await authorRepository.GetByIdAsync(request.AuthorId);
         if (author is null)
         {
             logger.LogWarning("CreateBook failed: Author {AuthorId} not found", request.AuthorId);
-            throw new KeyNotFoundException($"Author with ID {request.AuthorId} not found.");
+            throw new NotFoundException(nameof(Author), request.AuthorId);
         }
 
         var book = Book.Create(
@@ -91,7 +97,7 @@ public class BookService(
         if (book is null)
         {
             logger.LogWarning("UpdateBook failed: Book {BookId} not found", bookId);
-            throw new KeyNotFoundException($"Book with ID {bookId} not found.");
+            throw new NotFoundException(nameof(Book), bookId);
         }
 
         if (request.Title == book.Title && request.Isbn == book.Isbn && request.Genre == book.Genre)
@@ -109,7 +115,9 @@ public class BookService(
                 request.Isbn,
                 existingBook.Id
             );
-            throw new InvalidOperationException($"ISBN '{request.Isbn}' is taken.");
+            var validationException = new ValidationException();
+            validationException.AddError("Isbn", $"ISBN '{request.Isbn}' is already taken.");
+            throw validationException;
         }
 
         book.ChangeMetadata(request.Title, request.Isbn, request.Genre);
@@ -126,7 +134,7 @@ public class BookService(
         if (book is null)
         {
             logger.LogWarning("DeleteBook failed: Book {BookId} not found", bookId);
-            throw new KeyNotFoundException($"Book with ID {bookId} not found.");
+            throw new NotFoundException(nameof(Book), bookId);
         }
 
         bookRepository.Delete(book);
