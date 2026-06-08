@@ -1,7 +1,9 @@
+using IH.LibrarySystem.Application.Common.Exceptions;
 using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Loans.Dtos;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Common;
+using IH.LibrarySystem.Domain.Common.Exceptions;
 using IH.LibrarySystem.Domain.Loans;
 using IH.LibrarySystem.Domain.Members;
 using IH.LibrarySystem.Domain.SharedKernel;
@@ -44,7 +46,7 @@ public class LoanService(
         if (loan is null)
         {
             logger.LogWarning("Loan retrieval failed: ID {LoanId} not found", loanId);
-            throw new KeyNotFoundException($"Loan with ID {loanId} not found.");
+            throw new NotFoundException(nameof(Loan), loanId);
         }
 
         return MapToDto(loan);
@@ -63,14 +65,14 @@ public class LoanService(
         if (member == null)
         {
             logger.LogWarning("Member retrieval failed: ID {MemberId} not found", request.MemberId);
-            throw new KeyNotFoundException($"Member with ID {request.MemberId} not found.");
+            throw new NotFoundException(nameof(Member), request.MemberId);
         }
 
         var book = await bookRepository.GetByIdAsync(request.BookId);
         if (book == null)
         {
             logger.LogWarning("Book retrieval failed: ID {BookId} not found", request.BookId);
-            throw new KeyNotFoundException($"Book with ID {request.BookId} not found.");
+            throw new NotFoundException(nameof(Book), request.BookId);
         }
         if (!member.CanBorrow())
         {
@@ -79,9 +81,7 @@ public class LoanService(
                 member.Name,
                 member.Status
             );
-            throw new InvalidOperationException(
-                $"Member {member.Name} is not able to borrow (Member status: {member.Status})."
-            );
+            throw new InvalidLoanStatusException(member.Status.ToString(), "Active");
         }
 
         try
@@ -91,11 +91,12 @@ public class LoanService(
         catch (InvalidOperationException ex)
         {
             logger.LogWarning(
+                ex,
                 "Book '{BookTitle}' is not available (Book status: {BookStatus})",
                 book.Title,
                 book.Status
             );
-            throw;
+            throw new InvalidLoanStatusException(book.Status.ToString(), "Available");
         }
 
         var loan = Loan.Create(
@@ -119,7 +120,7 @@ public class LoanService(
         if (loan is null)
         {
             logger.LogWarning("ReturnBookAsync failed: Loan {LoanId} not found", request.LoanId);
-            throw new KeyNotFoundException($"Loan with ID {request.LoanId} not found.");
+            throw new NotFoundException(nameof(Loan), request.LoanId);
         }
 
         var returnDate = request.ReturnDate ?? DateTime.UtcNow;
@@ -150,15 +151,13 @@ public class LoanService(
         if (loan is null)
         {
             logger.LogWarning("DeleteLoan failed: Loan {LoanId} not found", loanId);
-            throw new KeyNotFoundException($"Loan with ID {loanId} not found.");
+            throw new NotFoundException(nameof(Loan), loanId);
         }
 
         if (loan.ReturnDate is null)
         {
             logger.LogWarning("DeleteLoan failed: Loan {LoanId} has not been returned yet", loanId);
-            throw new InvalidOperationException(
-                $"Loan with ID {loanId} has not been returned yet."
-            );
+            throw new InvalidLoanStatusException("Active", "Returned");
         }
 
         loanRepository.Delete(loan);
