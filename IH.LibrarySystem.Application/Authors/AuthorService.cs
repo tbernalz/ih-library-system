@@ -1,4 +1,5 @@
 using IH.LibrarySystem.Application.Authors.Dtos;
+using IH.LibrarySystem.Application.Common.Exceptions;
 using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.SharedKernel;
@@ -21,7 +22,7 @@ public class AuthorService(
         if (author is null)
         {
             logger.LogWarning("Author retrieval failed: ID {AuthorId} not found", authorId);
-            throw new KeyNotFoundException($"Author with ID {authorId} not found.");
+            throw new NotFoundException(nameof(Author), authorId);
         }
 
         return MapToDto(author);
@@ -36,7 +37,12 @@ public class AuthorService(
         if (existing is not null)
         {
             logger.LogWarning("CreateBook rejected: Duplicate email: {Email}", request.Email);
-            throw new InvalidOperationException($"Email '{request.Email}' is already registered.");
+            var validationException = new ValidationException();
+            validationException.AddError(
+                "Email",
+                $"Email '{request.Email}' is already registered."
+            );
+            throw validationException;
         }
 
         var author = Author.Create(Guid.NewGuid(), request.Name, request.Email, request.Bio);
@@ -58,7 +64,7 @@ public class AuthorService(
         if (author is null)
         {
             logger.LogWarning("UpdateAuthor failed: Author {AuthorId} not found", authorId);
-            throw new KeyNotFoundException($"Author with ID {authorId} not found.");
+            throw new NotFoundException(nameof(Author), authorId);
         }
 
         if (
@@ -81,7 +87,9 @@ public class AuthorService(
                     authorId,
                     request.Email
                 );
-                throw new InvalidOperationException($"Email '{request.Email}' is already taken.");
+                var validationException = new ValidationException();
+                validationException.AddError("Email", $"Email '{request.Email}' is already taken.");
+                throw validationException;
             }
         }
 
@@ -99,7 +107,7 @@ public class AuthorService(
         if (author is null)
         {
             logger.LogWarning("DeleteAuthor failed: Author {AuthorId} not found", authorId);
-            throw new KeyNotFoundException($"Author with ID {authorId} not found.");
+            throw new NotFoundException(nameof(Author), authorId);
         }
 
         var hasBooks = await bookRepository.HasBooksByAuthorIdAsync(authorId);
@@ -109,9 +117,12 @@ public class AuthorService(
                 "DeleteAuthor failed: Author {AuthorId} has associated books",
                 authorId
             );
-            throw new InvalidOperationException(
+            var validationException = new ValidationException();
+            validationException.AddError(
+                "Author",
                 $"Cannot delete author '{author.Name}' as they have associated books. Please delete or reassign the books first."
             );
+            throw validationException;
         }
 
         repository.Delete(author);
