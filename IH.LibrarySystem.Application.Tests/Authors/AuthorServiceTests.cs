@@ -1,6 +1,7 @@
 using FluentAssertions;
 using IH.LibrarySystem.Application.Authors;
 using IH.LibrarySystem.Application.Authors.Dtos;
+using IH.LibrarySystem.Application.Common.Exceptions;
 using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.SharedKernel;
@@ -52,7 +53,7 @@ public class AuthorServiceTests
 
         var act = () => _sut.GetAuthorByIdAsync(authorId);
 
-        await act.Should().ThrowAsync<KeyNotFoundException>();
+        await act.Should().ThrowAsync<NotFoundException>();
     }
 
     #endregion
@@ -82,7 +83,7 @@ public class AuthorServiceTests
 
         var act = () => _sut.CreateAuthorAsync(request);
 
-        await act.Should().ThrowAsync<InvalidOperationException>();
+        await act.Should().ThrowAsync<ValidationException>();
         await _authorRepository.DidNotReceive().AddAsync(Arg.Any<Author>());
     }
 
@@ -117,7 +118,7 @@ public class AuthorServiceTests
 
         var act = () => _sut.DeleteAuthorAsync(authorId);
 
-        await act.Should().ThrowAsync<InvalidOperationException>();
+        await act.Should().ThrowAsync<ValidationException>();
         _authorRepository.DidNotReceive().Delete(Arg.Any<Author>());
     }
 

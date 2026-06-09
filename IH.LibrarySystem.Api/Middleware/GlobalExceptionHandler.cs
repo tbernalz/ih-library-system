@@ -1,3 +1,5 @@
+using IH.LibrarySystem.Application.Common.Exceptions;
+using IH.LibrarySystem.Domain.Common.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +17,9 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
 
         var (statusCode, title) = exception switch
         {
+            NotFoundException => (StatusCodes.Status404NotFound, "Resource Not Found"),
+            ValidationException => (StatusCodes.Status400BadRequest, "Invalid Request"),
+            DomainException => (StatusCodes.Status400BadRequest, "Invalid Request"),
             KeyNotFoundException => (StatusCodes.Status404NotFound, "Resource Not Found"),
             ArgumentException or InvalidOperationException => (
                 StatusCodes.Status400BadRequest,

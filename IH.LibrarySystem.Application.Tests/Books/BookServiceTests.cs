@@ -1,6 +1,7 @@
 using FluentAssertions;
 using IH.LibrarySystem.Application.Books;
 using IH.LibrarySystem.Application.Books.Dtos;
+using IH.LibrarySystem.Application.Common.Exceptions;
 using IH.LibrarySystem.Application.Discovery;
 using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
@@ -62,7 +63,7 @@ public class BookServiceTests
 
         var act = () => _sut.GetBookByIdAsync(bookId);
 
-        await act.Should().ThrowAsync<KeyNotFoundException>();
+        await act.Should().ThrowAsync<NotFoundException>();
     }
 
     #endregion
@@ -115,7 +116,7 @@ public class BookServiceTests
 
         var act = () => _sut.CreateBookAsync(request);
 
-        await act.Should().ThrowAsync<InvalidOperationException>();
+        await act.Should().ThrowAsync<ValidationException>();
 
         await _bookRepository.DidNotReceive().AddAsync(Arg.Any<Book>());
         await _unitOfWork.DidNotReceive().SaveChangesAsync();
