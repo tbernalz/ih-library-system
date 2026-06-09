@@ -6,6 +6,7 @@ using IH.LibrarySystem.Application.Discovery;
 using IH.LibrarySystem.Application.Loans;
 using IH.LibrarySystem.Application.Members;
 using IH.LibrarySystem.Application.Notifications;
+using IH.LibrarySystem.Application.Recommendations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -57,6 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IAiService, AiService>();
         services.AddScoped<IDiscoveryService, DiscoveryService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IRecommendationService, RecommendationService>();
 
         services.AddHostedService<BookVectorIngestionHostedService>();
         services.AddHostedService<OverdueLoanScannerHostedService>();
