@@ -1,0 +1,6 @@
+@IH_LibrarySystem_Api_HostAddress = http://localhost:5192
+@memberId = 00000000-0000-0000-0000-000000000000
+
+GET {{IH_LibrarySystem_Api_HostAddress}}/api/members/{{memberId}}/recommendations?topK=5
+
+###
