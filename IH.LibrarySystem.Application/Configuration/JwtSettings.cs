@@ -6,7 +6,7 @@ public sealed class JwtSettings
 {
     public const string SectionName = "Jwt";
 
-    [Required, MinLength(32)]
+    [Required]
     public string SigningKey { get; init; } = string.Empty;
 
     [Required]
