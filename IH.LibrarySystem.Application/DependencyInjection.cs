@@ -51,6 +51,22 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services
+            .AddOptions<JwtSettings>()
+            .Bind(configuration.GetSection(JwtSettings.SectionName))
+            .ValidateDataAnnotations()
+            .Validate(
+                s => System.Text.Encoding.UTF8.GetByteCount(s.SigningKey) >= 32,
+                "Jwt:SigningKey must be at least 32 bytes (256 bits) once UTF8-encoded."
+            )
+            .ValidateOnStart();
+
+        services
+            .AddOptions<GoogleAuthSettings>()
+            .Bind(configuration.GetSection(GoogleAuthSettings.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
         services.AddScoped<IAuthorService, AuthorService>();
         services.AddScoped<IBookService, BookService>();
         services.AddScoped<IMemberService, MemberService>();
