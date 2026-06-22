@@ -3,6 +3,7 @@ using IH.LibrarySystem.Application.Authors;
 using IH.LibrarySystem.Application.Books;
 using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Discovery;
+using IH.LibrarySystem.Application.Identity;
 using IH.LibrarySystem.Application.Loans;
 using IH.LibrarySystem.Application.Members;
 using IH.LibrarySystem.Application.Notifications;
@@ -71,6 +72,7 @@ public static class DependencyInjection
         services.AddScoped<IDiscoveryService, DiscoveryService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IRecommendationService, RecommendationService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         services.AddHostedService<BookVectorIngestionHostedService>();
         services.AddHostedService<OverdueLoanScannerHostedService>();
