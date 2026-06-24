@@ -2,6 +2,7 @@ using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Notifications;
 using IH.LibrarySystem.Domain.Authors;
 using IH.LibrarySystem.Domain.Books;
+using IH.LibrarySystem.Domain.Identity;
 using IH.LibrarySystem.Domain.Loans;
 using IH.LibrarySystem.Domain.Members;
 using IH.LibrarySystem.Domain.Notifications;
@@ -55,6 +56,8 @@ public static class DependencyInjection
         services.AddScoped<IMemberRepository, MemberRepository>();
         services.AddScoped<ILoanRepository, LoanRepository>();
         services.AddScoped<INotificationLogRepository, NotificationLogRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<LibraryDataSeeder>();
 
         services.AddLibraryAiClient(configuration);
