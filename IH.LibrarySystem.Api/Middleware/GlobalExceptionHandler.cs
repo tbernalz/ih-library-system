@@ -19,6 +19,10 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         {
             NotFoundException => (StatusCodes.Status404NotFound, "Resource Not Found"),
             ValidationException => (StatusCodes.Status400BadRequest, "Invalid Request"),
+            InvalidRefreshTokenException => (
+                StatusCodes.Status401Unauthorized,
+                "Invalid Refresh Token"
+            ),
             DomainException => (StatusCodes.Status400BadRequest, "Invalid Request"),
             KeyNotFoundException => (StatusCodes.Status404NotFound, "Resource Not Found"),
             ArgumentException or InvalidOperationException => (
