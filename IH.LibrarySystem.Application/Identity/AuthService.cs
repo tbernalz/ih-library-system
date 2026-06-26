@@ -2,6 +2,7 @@ using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Identity.Dtos;
 using IH.LibrarySystem.Domain.Common.Exceptions;
 using IH.LibrarySystem.Domain.Identity;
+using IH.LibrarySystem.Domain.Members;
 using IH.LibrarySystem.Domain.SharedKernel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,6 +15,7 @@ public sealed class AuthService(
     IRefreshTokenHasher refreshTokenHasher,
     IUserRepository userRepository,
     IRefreshTokenRepository refreshTokenRepository,
+    IMemberRepository memberRepository,
     IUnitOfWork unitOfWork,
     IOptions<JwtSettings> jwtSettings,
     ILogger<AuthService> logger
@@ -61,6 +63,21 @@ public sealed class AuthService(
                 identity.Picture
             );
             await userRepository.AddAsync(user);
+
+            if (user.Role == UserRole.Member)
+            {
+                var existingMember = await memberRepository.GetByEmailAsync(identity.Email);
+                if (existingMember is null)
+                {
+                    var member = Member.Create(Guid.NewGuid(), identity.Name, identity.Email);
+                    await memberRepository.AddAsync(member);
+                    logger.LogInformation(
+                        "Created Member entity for new user {UserId} ({Email}).",
+                        user.Id,
+                        identity.Email
+                    );
+                }
+            }
         }
         else
         {
