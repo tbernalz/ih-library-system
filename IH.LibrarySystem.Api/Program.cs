@@ -14,31 +14,32 @@ builder
     });
 
 builder.Services.AddProblemDetails();
-
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
 
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddLibraryAuthentication(builder.Configuration);
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
-
 app.UseStatusCodePages();
 
-// For portfolio visibility:
-// if (app.Environment.IsDevelopment())
-app.UseSwagger();
-app.UseSwaggerUI();
 app.MapOpenApi();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/openapi/v1.json", "v1");
+});
+
 await app.ApplyMigrationsAndSeedAsync();
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
