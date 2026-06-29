@@ -1,11 +1,13 @@
 using IH.LibrarySystem.Application.Ai;
 using IH.LibrarySystem.Application.Ai.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Policy = "StaffOrAdmin")]
 public class AiController(IAiService aiService) : ControllerBase
 {
     [HttpPost("complete")]

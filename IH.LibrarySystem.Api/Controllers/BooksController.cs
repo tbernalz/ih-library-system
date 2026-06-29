@@ -1,12 +1,14 @@
 using IH.LibrarySystem.Application.Books;
 using IH.LibrarySystem.Application.Books.Dtos;
 using IH.LibrarySystem.Domain.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class BooksController(IBookService bookService) : ControllerBase
 {
     [HttpGet("{id}")]
@@ -17,6 +19,7 @@ public class BooksController(IBookService bookService) : ControllerBase
     }
 
     [HttpGet("search")]
+    [AllowAnonymous]
     public async Task<ActionResult<PagedResult<BookDto>>> SearchBooks(
         [FromQuery] BookSearchRequest request
     )
@@ -26,6 +29,7 @@ public class BooksController(IBookService bookService) : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "StaffOrAdmin")]
     public async Task<ActionResult<BookDto>> CreateBook(CreateBookRequest request)
     {
         var book = await bookService.CreateBookAsync(request);
@@ -33,6 +37,7 @@ public class BooksController(IBookService bookService) : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = "StaffOrAdmin")]
     public async Task<ActionResult<BookDto>> UpdateBook(Guid id, UpdateBookRequest request)
     {
         var book = await bookService.UpdateBookAsync(id, request);
@@ -40,6 +45,7 @@ public class BooksController(IBookService bookService) : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = "StaffOrAdmin")]
     public async Task<IActionResult> DeleteBook(Guid id)
     {
         await bookService.DeleteBookAsync(id);

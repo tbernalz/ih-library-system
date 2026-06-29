@@ -1,11 +1,13 @@
 using IH.LibrarySystem.Application.Discovery;
 using IH.LibrarySystem.Application.Discovery.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
 [Route("api/discovery")]
+[Authorize]
 public sealed class DiscoveryController(IDiscoveryService discoveryService) : ControllerBase
 {
     [HttpPost("chat")]
@@ -15,9 +17,7 @@ public sealed class DiscoveryController(IDiscoveryService discoveryService) : Co
     )
     {
         if (string.IsNullOrWhiteSpace(request.Query))
-        {
             return BadRequest("Query is required.");
-        }
 
         var result = await discoveryService.ChatAsync(request.Query, cancellationToken);
         return Ok(result);
