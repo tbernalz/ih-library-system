@@ -7,6 +7,7 @@ namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Policy = "StaffOrAdmin")]
 public class MembersController(IMemberService memberService) : ControllerBase
 {
     [HttpGet("{id}")]
@@ -18,7 +19,6 @@ public class MembersController(IMemberService memberService) : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "StaffOrAdmin")]
     public async Task<ActionResult<MemberDto>> RegisterMember(RegisterMemberRequest request)
     {
         var member = await memberService.RegisterMemberAsync(request);
@@ -26,7 +26,6 @@ public class MembersController(IMemberService memberService) : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Policy = "StaffOrAdmin")]
     public async Task<ActionResult<MemberDto>> UpdateMember(Guid id, UpdateMemberRequest request)
     {
         var member = await memberService.UpdateMemberAsync(id, request);
@@ -34,7 +33,6 @@ public class MembersController(IMemberService memberService) : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> DeleteMember(Guid id)
     {
         await memberService.DeleteMemberAsync(id);
@@ -42,7 +40,6 @@ public class MembersController(IMemberService memberService) : ControllerBase
     }
 
     [HttpPatch("{id}/status")]
-    [Authorize(Policy = "StaffOrAdmin")]
     public async Task<ActionResult<MemberDto>> UpdateStatus(
         Guid id,
         [FromBody] UpdateStatusRequest request

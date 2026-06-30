@@ -3,11 +3,15 @@ using IH.LibrarySystem.Api.Extensions;
 using IH.LibrarySystem.Api.Middleware;
 using IH.LibrarySystem.Application;
 using IH.LibrarySystem.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder
-    .Services.AddControllers()
+    .Services.AddControllers(options =>
+    {
+        options.Filters.Add(new AuthorizeFilter());
+    })
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());

@@ -7,7 +7,6 @@ namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
 [Route("api/discovery")]
-[Authorize]
 public sealed class DiscoveryController(IDiscoveryService discoveryService) : ControllerBase
 {
     [HttpPost("chat")]

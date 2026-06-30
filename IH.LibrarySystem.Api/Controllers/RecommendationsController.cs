@@ -6,14 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
-[Route("api/members/{memberId:guid}/recommendations")]
-[Authorize]
+[Route("api/members/recommendations")]
 public sealed class RecommendationsController(IRecommendationService recommendationService)
     : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<RecommendationsResponse>> GetRecommendations(
-        Guid memberId,
+        [FromQuery] Guid memberId,
         [FromQuery] int topK = 5,
         CancellationToken cancellationToken = default
     )

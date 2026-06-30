@@ -7,6 +7,7 @@ namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Policy = "StaffOrAdmin")]
 public class AuthorsController(IAuthorService authorService) : ControllerBase
 {
     [HttpGet("{id}")]
@@ -18,7 +19,6 @@ public class AuthorsController(IAuthorService authorService) : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "StaffOrAdmin")]
     public async Task<ActionResult<AuthorDto>> CreateAuthor(CreateAuthorRequest request)
     {
         var author = await authorService.CreateAuthorAsync(request);
@@ -26,7 +26,6 @@ public class AuthorsController(IAuthorService authorService) : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Policy = "StaffOrAdmin")]
     public async Task<ActionResult<AuthorDto>> UpdateAuthor(Guid id, UpdateAuthorRequest request)
     {
         var author = await authorService.UpdateAuthorAsync(id, request);
@@ -34,7 +33,6 @@ public class AuthorsController(IAuthorService authorService) : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Policy = "StaffOrAdmin")]
     public async Task<IActionResult> DeleteAuthor(Guid id)
     {
         await authorService.DeleteAuthorAsync(id);

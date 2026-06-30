@@ -8,10 +8,10 @@ namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class BooksController(IBookService bookService) : ControllerBase
 {
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<ActionResult<BookDto>> GetBook(Guid id)
     {
         var book = await bookService.GetBookByIdAsync(id);

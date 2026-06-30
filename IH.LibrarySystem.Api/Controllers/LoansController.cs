@@ -30,7 +30,6 @@ public class LoansController(ILoanService loanService) : ControllerBase
     }
 
     [HttpPost("checkout")]
-    [Authorize(Policy = "StaffOrAdmin")]
     public async Task<ActionResult<LoanDto>> CheckoutBook(CheckoutBookRequest request)
     {
         var loan = await loanService.CheckoutBookAsync(request);

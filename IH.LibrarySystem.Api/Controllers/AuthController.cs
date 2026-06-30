@@ -53,7 +53,6 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
     /// already in the client's hands will simply expire on its own (by design — see README).
     /// </summary>
     [HttpPost("revoke")]
-    [Authorize]
     public async Task<IActionResult> Revoke(
         RevokeTokenRequest request,
         CancellationToken cancellationToken
@@ -68,7 +67,6 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
     /// token's "sub" claim.
     /// </summary>
     [HttpGet("me")]
-    [Authorize]
     public async Task<ActionResult<CurrentUserDto>> Me(CancellationToken cancellationToken)
     {
         var userId = GetUserId();
