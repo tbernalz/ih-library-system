@@ -1,6 +1,8 @@
 using IH.LibrarySystem.Api.Extensions;
 using IH.LibrarySystem.Application.Notifications;
+using IH.LibrarySystem.IntegrationTests.Auth;
 using IH.LibrarySystem.IntegrationTests.Stubs;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -21,6 +23,12 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
 
     private LibraryWebApplicationFactory? _factory;
 
+    /// <summary>
+    /// Default client. Thanks to <see cref="TestAuthenticationHandler"/>, requests with no
+    /// extra headers are authenticated as a standard Member — call the
+    /// <c>AsRole</c>/<c>AsAdmin</c>/<c>AsStaff</c>/<c>AsAnonymous</c> extension methods
+    /// (see <see cref="TestAuthHttpClientExtensions"/>) to change identity per-test.
+    /// </summary>
     public HttpClient Client { get; private set; } = null!;
 
     public async Task InitializeAsync()
@@ -47,6 +55,16 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         (
             _factory ?? throw new InvalidOperationException("Fixture not initialized.")
         ).Services.CreateScope();
+
+    /// <summary>
+    /// Creates a fresh, independently-configurable HttpClient against the same test server.
+    /// Useful when a test needs two clients with different identities at once (e.g. asserting
+    /// a Member can't see what an Admin can, side by side).
+    /// </summary>
+    public HttpClient CreateClient() =>
+        (
+            _factory ?? throw new InvalidOperationException("Fixture not initialized.")
+        ).CreateClient();
 
     private Respawner _respawner = default!;
 
@@ -105,6 +123,13 @@ internal sealed class LibraryWebApplicationFactory : WebApplicationFactory<Progr
 
             services.RemoveAll<IEmailNotificationService>();
             services.AddSingleton<IEmailNotificationService, StubEmailNotificationService>();
+
+            services
+                .AddAuthentication(TestAuthenticationHandler.SchemeName)
+                .AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>(
+                    TestAuthenticationHandler.SchemeName,
+                    _ => { }
+                );
         });
     }
 }
