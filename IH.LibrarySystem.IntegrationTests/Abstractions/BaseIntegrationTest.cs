@@ -7,6 +7,7 @@ using IH.LibrarySystem.Domain.Loans;
 using IH.LibrarySystem.Domain.Members;
 using IH.LibrarySystem.Domain.Notifications;
 using IH.LibrarySystem.Infrastructure.Data;
+using IH.LibrarySystem.IntegrationTests.Auth;
 using IH.LibrarySystem.IntegrationTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
@@ -30,7 +31,12 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
 
     protected BaseIntegrationTest(IntegrationTestFixture fixture) => Fixture = fixture;
 
-    public Task InitializeAsync() => Fixture.ResetDatabaseAsync();
+    public async Task InitializeAsync()
+    {
+        await Fixture.ResetDatabaseAsync();
+
+        Client.AsMember();
+    }
 
     public Task DisposeAsync() => Task.CompletedTask;
 
