@@ -56,7 +56,7 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
         );
 
         var response = await Client.GetAsync(
-            new Uri($"/api/members/{memberId}/recommendations", UriKind.Relative)
+            new Uri($"/api/members/recommendations?memberId={memberId}", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -80,7 +80,7 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
         );
 
         var response = await Client.GetAsync(
-            new Uri($"/api/members/{memberId}/recommendations", UriKind.Relative)
+            new Uri($"/api/members/recommendations?memberId={memberId}", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -97,7 +97,7 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
     public async Task GetRecommendations_WhenMemberNotFound_Returns404()
     {
         var response = await Client.GetAsync(
-            new Uri($"/api/members/{Guid.NewGuid()}/recommendations", UriKind.Relative)
+            new Uri($"/api/members/recommendations?memberId={Guid.NewGuid()}", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -112,7 +112,7 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
         );
 
         var response = await Client.GetAsync(
-            new Uri($"/api/members/{memberId}/recommendations?topK=0", UriKind.Relative)
+            new Uri($"/api/members/recommendations?memberId={memberId}&topK=0", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -127,7 +127,7 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
         );
 
         var response = await Client.GetAsync(
-            new Uri($"/api/members/{memberId}/recommendations?topK=99", UriKind.Relative)
+            new Uri($"/api/members/recommendations?memberId={memberId}&topK=99", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -164,7 +164,7 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
         }
 
         var response = await Client.GetAsync(
-            new Uri($"/api/members/{memberId}/recommendations", UriKind.Relative)
+            new Uri($"/api/members/recommendations?memberId={memberId}", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
