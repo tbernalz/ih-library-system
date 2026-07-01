@@ -5,6 +5,7 @@ using IH.LibrarySystem.Application.Loans.Dtos;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Common;
 using IH.LibrarySystem.IntegrationTests.Abstractions;
+using IH.LibrarySystem.IntegrationTests.Auth;
 using IH.LibrarySystem.IntegrationTests.Collections;
 using IH.LibrarySystem.IntegrationTests.Fixtures;
 using IH.LibrarySystem.IntegrationTests.Support;
@@ -20,6 +21,8 @@ public sealed class LoanIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task CheckoutBook_creates_loan_and_marks_book_as_loaned()
     {
+        Client.AsStaff();
+
         var authorId = await PersistAuthorAsync(
             "Loan Author",
             TestDataFactory.UniqueEmail("loan-author")
@@ -52,6 +55,8 @@ public sealed class LoanIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task CheckoutBook_returns_400_when_book_is_not_available()
     {
+        Client.AsStaff();
+
         var authorId = await PersistAuthorAsync(
             "Busy Author",
             TestDataFactory.UniqueEmail("busy-author")
@@ -79,6 +84,8 @@ public sealed class LoanIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task GetLoans_can_filter_by_member_id()
     {
+        Client.AsStaff();
+
         var authorId = await PersistAuthorAsync(
             "Filter Author",
             TestDataFactory.UniqueEmail("filter-author")
@@ -118,6 +125,8 @@ public sealed class LoanIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task ReturnBook_sets_return_date_in_database()
     {
+        Client.AsStaff();
+
         var authorId = await PersistAuthorAsync(
             "Return Author",
             TestDataFactory.UniqueEmail("return-author")
@@ -162,6 +171,8 @@ public sealed class LoanIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task DeleteLoan_returns_400_when_loan_is_still_active()
     {
+        Client.AsAdmin();
+
         var authorId = await PersistAuthorAsync(
             "Active Author",
             TestDataFactory.UniqueEmail("active-author")
@@ -197,6 +208,8 @@ public sealed class LoanIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task DeleteLoan_returns_204_after_book_is_returned()
     {
+        Client.AsAdmin();
+
         var authorId = await PersistAuthorAsync(
             "Done Author",
             TestDataFactory.UniqueEmail("done-author")
@@ -232,6 +245,8 @@ public sealed class LoanIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task GetLoan_returns_404_when_missing()
     {
+        Client.AsStaff();
+
         var response = await Client.GetAsync(
             new Uri($"/api/loans/{Guid.NewGuid()}", UriKind.Relative)
         );

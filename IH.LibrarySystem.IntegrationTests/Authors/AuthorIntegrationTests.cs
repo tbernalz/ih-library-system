@@ -4,6 +4,7 @@ using FluentAssertions;
 using IH.LibrarySystem.Application.Authors.Dtos;
 using IH.LibrarySystem.Application.Books.Dtos;
 using IH.LibrarySystem.IntegrationTests.Abstractions;
+using IH.LibrarySystem.IntegrationTests.Auth;
 using IH.LibrarySystem.IntegrationTests.Collections;
 using IH.LibrarySystem.IntegrationTests.Fixtures;
 using IH.LibrarySystem.IntegrationTests.Support;
@@ -19,6 +20,8 @@ public sealed class AuthorIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task CreateAuthor_returns_created_and_persists_row()
     {
+        Client.AsStaff();
+
         var email = TestDataFactory.UniqueEmail("author");
         var request = new CreateAuthorRequest("Jane Author", email, "Bio line");
 
@@ -49,6 +52,8 @@ public sealed class AuthorIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task CreateAuthor_returns_400_when_email_already_registered()
     {
+        Client.AsStaff();
+
         var email = TestDataFactory.UniqueEmail("dup-author");
         await PersistAuthorAsync("First", email);
 
@@ -64,6 +69,8 @@ public sealed class AuthorIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task UpdateAuthor_updates_database_row()
     {
+        Client.AsStaff();
+
         var id = await PersistAuthorAsync("Old", TestDataFactory.UniqueEmail("old-author"));
         var newEmail = TestDataFactory.UniqueEmail("new-author");
 
@@ -85,6 +92,8 @@ public sealed class AuthorIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task DeleteAuthor_returns_204_and_removes_row()
     {
+        Client.AsAdmin();
+
         var id = await PersistAuthorAsync(
             "Delete Author",
             TestDataFactory.UniqueEmail("delete-author")
@@ -100,6 +109,8 @@ public sealed class AuthorIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task DeleteAuthor_returns_400_when_author_has_books()
     {
+        Client.AsAdmin();
+
         var authorId = await PersistAuthorAsync(
             "With Books",
             TestDataFactory.UniqueEmail("books-author")

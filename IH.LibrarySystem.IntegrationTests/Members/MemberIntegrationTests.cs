@@ -4,6 +4,7 @@ using FluentAssertions;
 using IH.LibrarySystem.Application.Members.Dtos;
 using IH.LibrarySystem.Domain.Members;
 using IH.LibrarySystem.IntegrationTests.Abstractions;
+using IH.LibrarySystem.IntegrationTests.Auth;
 using IH.LibrarySystem.IntegrationTests.Collections;
 using IH.LibrarySystem.IntegrationTests.Fixtures;
 using IH.LibrarySystem.IntegrationTests.Support;
@@ -19,6 +20,8 @@ public sealed class MemberIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task RegisterMember_returns_created_and_persists_row()
     {
+        Client.AsStaff();
+
         var email = TestDataFactory.UniqueEmail("member");
         var request = new RegisterMemberRequest(TestDataFactory.PersonName(), email);
 
@@ -39,6 +42,8 @@ public sealed class MemberIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task GetMember_returns_ok_when_member_exists()
     {
+        Client.AsStaff();
+
         var email = TestDataFactory.UniqueEmail("member");
         var id = await PersistMemberAsync("Existing Member", email);
 
@@ -55,6 +60,8 @@ public sealed class MemberIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task GetMember_returns_404_when_missing()
     {
+        Client.AsStaff();
+
         var response = await Client.GetAsync(
             new Uri($"/api/members/{Guid.NewGuid()}", UriKind.Relative)
         );
@@ -65,6 +72,8 @@ public sealed class MemberIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task RegisterMember_returns_400_when_email_already_registered()
     {
+        Client.AsStaff();
+
         var email = TestDataFactory.UniqueEmail("dup");
         await PersistMemberAsync("First", email);
 
@@ -80,6 +89,8 @@ public sealed class MemberIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task UpdateMember_updates_database_row()
     {
+        Client.AsStaff();
+
         var id = await PersistMemberAsync("Old Name", TestDataFactory.UniqueEmail("old"));
         var newEmail = TestDataFactory.UniqueEmail("new");
 
@@ -100,6 +111,8 @@ public sealed class MemberIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task PatchStatus_updates_member_status_in_database()
     {
+        Client.AsStaff();
+
         var id = await PersistMemberAsync("Status Member", TestDataFactory.UniqueEmail("status"));
 
         var response = await Client.PatchAsJsonAsync(
@@ -118,6 +131,8 @@ public sealed class MemberIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task DeleteMember_removes_row_from_database()
     {
+        Client.AsAdmin();
+
         var id = await PersistMemberAsync("Delete Me", TestDataFactory.UniqueEmail("delete"));
 
         var response = await Client.DeleteAsync(new Uri($"/api/members/{id}", UriKind.Relative));

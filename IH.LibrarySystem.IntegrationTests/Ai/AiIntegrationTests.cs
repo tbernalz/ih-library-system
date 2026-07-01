@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 using IH.LibrarySystem.Application.Ai.Dtos;
 using IH.LibrarySystem.IntegrationTests.Abstractions;
+using IH.LibrarySystem.IntegrationTests.Auth;
 using IH.LibrarySystem.IntegrationTests.Collections;
 using IH.LibrarySystem.IntegrationTests.Fixtures;
 
@@ -18,6 +19,8 @@ public sealed class AiIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task Complete_returns_stubbed_model_response()
     {
+        Client.AsStaff();
+
         var response = await Client.PostAsJsonAsync(
             "/api/ai/complete",
             new CompleteRequest("Hello from integration tests"),

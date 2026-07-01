@@ -5,6 +5,7 @@ using IH.LibrarySystem.Application.Books.Dtos;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Common;
 using IH.LibrarySystem.IntegrationTests.Abstractions;
+using IH.LibrarySystem.IntegrationTests.Auth;
 using IH.LibrarySystem.IntegrationTests.Collections;
 using IH.LibrarySystem.IntegrationTests.Fixtures;
 using IH.LibrarySystem.IntegrationTests.Support;
@@ -20,6 +21,8 @@ public sealed class BookIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task CreateBook_returns_created_and_persists_row()
     {
+        Client.AsStaff();
+
         var authorId = await PersistAuthorAsync(
             "Book Author",
             TestDataFactory.UniqueEmail("book-author")
@@ -54,6 +57,8 @@ public sealed class BookIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task CreateBook_returns_404_when_author_does_not_exist()
     {
+        Client.AsStaff();
+
         var request = new CreateBookRequest(
             "Orphan",
             TestDataFactory.Isbn(),
@@ -69,6 +74,8 @@ public sealed class BookIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task CreateBook_returns_400_when_isbn_already_exists()
     {
+        Client.AsStaff();
+
         var authorId = await PersistAuthorAsync(
             "ISBN Author",
             TestDataFactory.UniqueEmail("isbn-author")
@@ -114,6 +121,8 @@ public sealed class BookIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task UpdateBook_updates_database_row()
     {
+        Client.AsStaff();
+
         var authorId = await PersistAuthorAsync(
             "Update Author",
             TestDataFactory.UniqueEmail("update-author")
@@ -137,6 +146,8 @@ public sealed class BookIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task DeleteBook_removes_row_from_database()
     {
+        Client.AsAdmin();
+
         var authorId = await PersistAuthorAsync(
             "Delete Author",
             TestDataFactory.UniqueEmail("delete-book-author")
