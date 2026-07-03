@@ -19,6 +19,8 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
         {
             NotFoundException => (StatusCodes.Status404NotFound, "Resource Not Found"),
             ValidationException => (StatusCodes.Status400BadRequest, "Invalid Request"),
+            ForbiddenException => (StatusCodes.Status403Forbidden, "Forbidden"),
+            UnauthorizedException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             InvalidRefreshTokenException => (
                 StatusCodes.Status401Unauthorized,
                 "Invalid Refresh Token"
