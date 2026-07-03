@@ -34,8 +34,5 @@ public interface IAuthService
         CancellationToken cancellationToken = default
     );
 
-    Task<CurrentUserDto> GetCurrentUserAsync(
-        Guid userId,
-        CancellationToken cancellationToken = default
-    );
+    Task<CurrentUserDto> GetCurrentUserAsync(CancellationToken cancellationToken = default);
 }

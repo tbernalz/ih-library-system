@@ -1,3 +1,4 @@
+using IH.LibrarySystem.Application.Common.Abstractions;
 using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Identity.Dtos;
 using IH.LibrarySystem.Domain.Common.Exceptions;
@@ -16,6 +17,7 @@ public sealed class AuthService(
     IUserRepository userRepository,
     IRefreshTokenRepository refreshTokenRepository,
     IMemberRepository memberRepository,
+    ICurrentUserContext currentUserContext,
     IUnitOfWork unitOfWork,
     IOptions<JwtSettings> jwtSettings,
     ILogger<AuthService> logger
@@ -176,15 +178,13 @@ public sealed class AuthService(
     }
 
     public async Task<CurrentUserDto> GetCurrentUserAsync(
-        Guid userId,
         CancellationToken cancellationToken = default
     )
     {
-        var user = await userRepository.GetByIdAsync(userId);
-        if (user is null)
-        {
-            throw new Common.Exceptions.NotFoundException(nameof(User), userId);
-        }
+        var userId = currentUserContext.UserId;
+        var user =
+            await userRepository.GetByIdAsync(userId)
+            ?? throw new Common.Exceptions.NotFoundException(nameof(User), userId);
 
         return new CurrentUserDto(
             user.Id,
