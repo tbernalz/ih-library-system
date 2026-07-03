@@ -1,4 +1,4 @@
-using System.Security.Claims;
+using IH.LibrarySystem.Application.Common.Abstractions;
 using IH.LibrarySystem.Application.Identity;
 using IH.LibrarySystem.Application.Identity.Dtos;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +8,8 @@ namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public sealed class AuthController(IAuthService authService) : ControllerBase
+public sealed class AuthController(IAuthService authService, IClientRequestContext clientRequest)
+    : ControllerBase
 {
     /// <summary>
     /// Exchanges a Google ID token (obtained client-side via Google Identity Services) for
@@ -23,7 +24,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
     {
         var result = await authService.LoginWithGoogleAsync(
             request,
-            GetClientIpAddress(),
+            clientRequest.ClientIpAddress,
             cancellationToken
         );
         return Ok(result);
@@ -42,7 +43,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
     {
         var result = await authService.RefreshAsync(
             request,
-            GetClientIpAddress(),
+            clientRequest.ClientIpAddress,
             cancellationToken
         );
         return Ok(result);
@@ -58,7 +59,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        await authService.RevokeAsync(request, GetClientIpAddress(), cancellationToken);
+        await authService.RevokeAsync(request, clientRequest.ClientIpAddress, cancellationToken);
         return NoContent();
     }
 
@@ -69,22 +70,7 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
     [HttpGet("me")]
     public async Task<ActionResult<CurrentUserDto>> Me(CancellationToken cancellationToken)
     {
-        var userId = GetUserId();
-        var result = await authService.GetCurrentUserAsync(userId, cancellationToken);
+        var result = await authService.GetCurrentUserAsync(cancellationToken);
         return Ok(result);
     }
-
-    private Guid GetUserId()
-    {
-        var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-
-        if (sub is null || !Guid.TryParse(sub, out var userId))
-        {
-            throw new UnauthorizedAccessException("Access token is missing a valid subject claim.");
-        }
-
-        return userId;
-    }
-
-    private string? GetClientIpAddress() => HttpContext.Connection.RemoteIpAddress?.ToString();
 }
