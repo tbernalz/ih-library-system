@@ -1,3 +1,4 @@
+using IH.LibrarySystem.Application.Common.Abstractions;
 using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Identity;
 using IH.LibrarySystem.Application.Notifications;
@@ -32,6 +33,7 @@ public static class DependencyInjection
     {
         services.AddDatabase(configuration);
         services.AddRepositories();
+        services.AddHttpContext();
         services.AddIdentity();
         services.AddNotifications(configuration);
         services.AddLibraryAiClient(configuration);
@@ -74,6 +76,20 @@ public static class DependencyInjection
         services.AddScoped<INotificationLogRepository, NotificationLogRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddHttpContext(this IServiceCollection services)
+    {
+        services.AddHttpContextAccessor();
+        services.AddScoped<HttpContextUserContext>();
+        services.AddScoped<ICurrentUserContext>(sp =>
+            sp.GetRequiredService<HttpContextUserContext>()
+        );
+        services.AddScoped<IClientRequestContext>(sp =>
+            sp.GetRequiredService<HttpContextUserContext>()
+        );
 
         return services;
     }
