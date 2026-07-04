@@ -13,13 +13,13 @@ using IH.LibrarySystem.Infrastructure.Data;
 using IH.LibrarySystem.Infrastructure.Identity;
 using IH.LibrarySystem.Infrastructure.Notifications;
 using IH.LibrarySystem.Infrastructure.Repositories;
+using IH.LibrarySystem.Infrastructure.VectorStore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OllamaSharp;
-using Pgvector.EntityFrameworkCore;
 using SendGrid;
 
 namespace IH.LibrarySystem.Infrastructure;
@@ -54,11 +54,7 @@ public static class DependencyInjection
                     + "Set it in appsettings.json or user secrets."
             );
 
-        services.AddDbContext<LibraryDbContext>(options =>
-            options
-                .UseNpgsql(connectionString, npgsql => npgsql.UseVector())
-                .UseSnakeCaseNamingConvention()
-        );
+        services.AddDbContext<LibraryDbContext>(options => options.UseSqlServer(connectionString));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<LibraryDataSeeder>();
