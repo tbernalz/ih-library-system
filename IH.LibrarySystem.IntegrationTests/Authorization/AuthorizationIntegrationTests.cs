@@ -187,7 +187,7 @@ public sealed class AuthorizationIntegrationTests : BaseIntegrationTest
         );
         var memberId = await PersistMemberAsync(
             "Checkout Allowed Member",
-            TestDataFactory.UniqueEmail("checkout-allowed-member")
+            TestAuthenticationHandler.DefaultEmail
         );
 
         using var client = Fixture.CreateClient().AsMember();
@@ -199,6 +199,35 @@ public sealed class AuthorizationIntegrationTests : BaseIntegrationTest
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task CheckoutBook_AsMember_Returns403_WhenCheckingOutForAnotherMember()
+    {
+        var authorId = await PersistAuthorAsync(
+            "Forbidden Checkout Author",
+            TestDataFactory.UniqueEmail("forbidden-checkout-author")
+        );
+        var bookId = await PersistBookAsync(
+            "Forbidden Checkout Book",
+            TestDataFactory.Isbn(),
+            "Genre",
+            authorId
+        );
+        var otherMemberId = await PersistMemberAsync(
+            "Other Member",
+            TestDataFactory.UniqueEmail("other-member")
+        );
+
+        using var client = Fixture.CreateClient().AsMember();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/loans/checkout",
+            new CheckoutBookRequest(bookId, otherMemberId),
+            SerializerOptions
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     #endregion
