@@ -1,3 +1,4 @@
+using IH.LibrarySystem.Application.Common.Abstractions;
 using IH.LibrarySystem.Application.Common.Exceptions;
 using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Loans.Dtos;
@@ -16,6 +17,7 @@ public class LoanService(
     ILoanRepository loanRepository,
     IBookRepository bookRepository,
     IMemberRepository memberRepository,
+    ICurrentUserContext currentUserContext,
     IUnitOfWork unitOfWork,
     ILogger<LoanService> logger,
     IOptions<LibrarySettings> settings
@@ -67,6 +69,8 @@ public class LoanService(
             logger.LogWarning("Member retrieval failed: ID {MemberId} not found", request.MemberId);
             throw new NotFoundException(nameof(Member), request.MemberId);
         }
+
+        EnsureCanCheckoutForMember(member);
 
         var book = await bookRepository.GetByIdAsync(request.BookId);
         if (book == null)
@@ -162,6 +166,25 @@ public class LoanService(
 
         loanRepository.Delete(loan);
         await unitOfWork.SaveChangesAsync();
+    }
+
+    private void EnsureCanCheckoutForMember(Member member)
+    {
+        if (currentUserContext.IsStaffOrAdmin)
+        {
+            return;
+        }
+
+        var callerEmail = currentUserContext.Email;
+        if (
+            callerEmail is null
+            || !string.Equals(member.Email, callerEmail, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            throw new ForbiddenException(
+                "You can only check out books for your own member account."
+            );
+        }
     }
 
     private static LoanDto MapToDto(Loan loan) =>
