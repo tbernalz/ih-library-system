@@ -10,6 +10,7 @@ public class Book : Entity
     public string Isbn { get; private set; } = default!;
     public string Genre { get; private set; } = default!;
     public BookStatus Status { get; private set; }
+    public bool HasEmbedding { get; private set; }
 
     private Book()
         : base(Guid.Empty) { }
@@ -75,6 +76,12 @@ public class Book : Entity
         }
 
         Status = BookStatus.Available;
+        SetUpdated();
+    }
+
+    public void MarkAsHasEmbedding()
+    {
+        HasEmbedding = true;
         SetUpdated();
     }
 }
