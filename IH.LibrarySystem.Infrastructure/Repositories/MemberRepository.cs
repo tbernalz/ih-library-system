@@ -13,6 +13,6 @@ public class MemberRepository(LibraryDbContext context)
         if (string.IsNullOrWhiteSpace(email))
             return null;
 
-        return await DbSet.FirstOrDefaultAsync(m => EF.Functions.ILike(m.Email, email));
+        return await DbSet.FirstOrDefaultAsync(m => m.Email == email);
     }
 }

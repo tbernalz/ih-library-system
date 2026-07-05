@@ -27,7 +27,7 @@ public class BookRepository(LibraryDbContext context)
         {
             var term = filter.SearchTerm.Trim();
 
-            query = query.Where(b => EF.Functions.ILike(b.Title, $"%{term}%") || b.Isbn == term);
+            query = query.Where(b => b.Title.Contains(term) || b.Isbn == term);
         }
 
         var orderedQuery = query.OrderBy(b => b.Title).ThenBy(b => b.Id);
