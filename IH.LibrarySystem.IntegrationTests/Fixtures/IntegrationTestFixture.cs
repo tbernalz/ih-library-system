@@ -1,5 +1,6 @@
 using IH.LibrarySystem.Api.Extensions;
 using IH.LibrarySystem.Application.Notifications;
+using IH.LibrarySystem.Infrastructure.VectorStore;
 using IH.LibrarySystem.IntegrationTests.Auth;
 using IH.LibrarySystem.IntegrationTests.Stubs;
 using Microsoft.AspNetCore.Authentication;
@@ -9,16 +10,16 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Npgsql;
 using Respawn;
-using Testcontainers.PostgreSql;
+using Testcontainers.MsSql;
 
 namespace IH.LibrarySystem.IntegrationTests.Fixtures;
 
 public sealed class IntegrationTestFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-        .WithImage("pgvector/pgvector:pg16")
+    private readonly MsSqlContainer _mssql = new MsSqlBuilder()
+        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+        .WithPassword("YourStrong@Passw0rd")
         .Build();
 
     private LibraryWebApplicationFactory? _factory;
@@ -33,9 +34,9 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await _postgres.StartAsync().ConfigureAwait(false);
+        await _mssql.StartAsync().ConfigureAwait(false);
 
-        _factory = new LibraryWebApplicationFactory(_postgres.GetConnectionString());
+        _factory = new LibraryWebApplicationFactory(_mssql.GetConnectionString());
         Client = _factory.CreateClient();
     }
 
@@ -48,7 +49,7 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
             await _factory.DisposeAsync().ConfigureAwait(false);
         }
 
-        await _postgres.DisposeAsync().ConfigureAwait(false);
+        await _mssql.DisposeAsync().ConfigureAwait(false);
     }
 
     public IServiceScope CreateScope() =>
@@ -70,7 +71,9 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
 
     public async Task ResetDatabaseAsync()
     {
-        using var connection = new NpgsqlConnection(_postgres.GetConnectionString());
+        using var connection = new Microsoft.Data.SqlClient.SqlConnection(
+            _mssql.GetConnectionString()
+        );
         await connection.OpenAsync();
 
         if (_respawner == null)
@@ -79,7 +82,7 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
                 connection,
                 new RespawnerOptions
                 {
-                    DbAdapter = DbAdapter.Postgres,
+                    DbAdapter = DbAdapter.SqlServer,
                     TablesToIgnore = ["__EFMigrationsHistory"],
                 }
             );
@@ -120,6 +123,9 @@ internal sealed class LibraryWebApplicationFactory : WebApplicationFactory<Progr
                 IEmbeddingGenerator<string, Embedding<float>>,
                 StubEmbeddingGenerator
             >();
+
+            services.RemoveAll<IQdrantVectorStore>();
+            services.AddSingleton<IQdrantVectorStore, StubQdrantVectorStore>();
 
             services.RemoveAll<IEmailNotificationService>();
             services.AddSingleton<IEmailNotificationService, StubEmailNotificationService>();

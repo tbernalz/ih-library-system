@@ -1,4 +1,5 @@
 using IH.LibrarySystem.Infrastructure.Data;
+using IH.LibrarySystem.Infrastructure.VectorStore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 
@@ -17,6 +18,7 @@ public static class MigrationExtensions
         var context = services.GetRequiredService<LibraryDbContext>();
         var logger = services.GetRequiredService<ILogger<LibraryDbContext>>();
         var seeder = services.GetRequiredService<LibraryDataSeeder>();
+        var qdrantVectorStore = services.GetRequiredService<IQdrantVectorStore>();
 
         try
         {
@@ -60,13 +62,19 @@ public static class MigrationExtensions
 
             if (hostEnvironment.IsEnvironment(IntegrationTestingEnvironment))
             {
-                logger.LogInformation("Skipping data seeding in {Environment}.", hostEnvironment.EnvironmentName);
+                logger.LogInformation(
+                    "Skipping data seeding in {Environment}.",
+                    hostEnvironment.EnvironmentName
+                );
             }
             else
             {
                 logger.LogInformation("Applying data seeding...");
                 await seeder.SeedAsync();
             }
+
+            logger.LogInformation("Initializing Qdrant vector store collection...");
+            await qdrantVectorStore.InitializeCollectionAsync();
 
             logger.LogInformation("Database migration and seeding completed successfully.");
         }

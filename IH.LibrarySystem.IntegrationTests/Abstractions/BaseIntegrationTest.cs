@@ -7,12 +7,12 @@ using IH.LibrarySystem.Domain.Loans;
 using IH.LibrarySystem.Domain.Members;
 using IH.LibrarySystem.Domain.Notifications;
 using IH.LibrarySystem.Infrastructure.Data;
+using IH.LibrarySystem.Infrastructure.VectorStore;
 using IH.LibrarySystem.IntegrationTests.Auth;
 using IH.LibrarySystem.IntegrationTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
-using Pgvector;
 
 namespace IH.LibrarySystem.IntegrationTests.Abstractions;
 
@@ -192,6 +192,7 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
         var embeddingGenerator = scope.ServiceProvider.GetRequiredService<
             IEmbeddingGenerator<string, Embedding<float>>
         >();
+        var vectorStore = scope.ServiceProvider.GetRequiredService<IQdrantVectorStore>();
 
         var book = Book.Create(Guid.NewGuid(), title, isbn, authorId, genre);
         db.Books.Add(book);
@@ -201,10 +202,7 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
         var embeddingResult = await embeddingGenerator.GenerateAsync([embeddingText]);
         var embedding = embeddingResult[0].Vector.ToArray();
 
-        db.Entry(book).Property(BookVectorEmbedding.PropertyName).CurrentValue = new Vector(
-            embedding
-        );
-        await db.SaveChangesAsync().ConfigureAwait(false);
+        await vectorStore.UpsertBookVectorAsync(book.Id, embedding).ConfigureAwait(false);
 
         return book.Id;
     }
