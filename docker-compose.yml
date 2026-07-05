@@ -13,6 +13,18 @@ services:
       - mssql-data:/var/opt/mssql
     restart: unless-stopped
 
+  qdrant:
+    container_name: ih-library-system-qdrant
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    restart: unless-stopped
+
 volumes:
   mssql-data:
+    driver: local
+  qdrant-data:
     driver: local
