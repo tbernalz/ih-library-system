@@ -32,6 +32,7 @@ public static class DependencyInjection
     )
     {
         services.AddDatabase(configuration);
+        services.AddVectorStore();
         services.AddRepositories();
         services.AddHttpContext();
         services.AddIdentity();
@@ -59,6 +60,12 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<LibraryDataSeeder>();
 
+        return services;
+    }
+
+    private static IServiceCollection AddVectorStore(this IServiceCollection services)
+    {
+        services.AddScoped<IQdrantVectorStore, QdrantVectorStore>();
         return services;
     }
 
