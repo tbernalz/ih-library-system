@@ -1,3 +1,4 @@
+using IH.LibrarySystem.Application.Common.Security;
 using IH.LibrarySystem.Application.Loans;
 using IH.LibrarySystem.Application.Loans.Dtos;
 using IH.LibrarySystem.Domain.Common;
@@ -12,7 +13,7 @@ namespace IH.LibrarySystem.Api.Controllers;
 public class LoansController(ILoanService loanService) : ControllerBase
 {
     [HttpGet]
-    [Authorize(Policy = "StaffOrAdmin")]
+    [Authorize(Policy = AuthorizationPolicies.StaffOrAdmin)]
     public async Task<ActionResult<PagedResult<LoanDto>>> GetLoans(
         [FromQuery] LoanSearchFilter filter
     )
@@ -22,7 +23,7 @@ public class LoansController(ILoanService loanService) : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize(Policy = "StaffOrAdmin")]
+    [Authorize(Policy = AuthorizationPolicies.StaffOrAdmin)]
     public async Task<ActionResult<LoanDto>> GetLoan(Guid id)
     {
         var loan = await loanService.GetLoanByIdAsync(id);
@@ -37,7 +38,7 @@ public class LoansController(ILoanService loanService) : ControllerBase
     }
 
     [HttpPost("return/{loanId}")]
-    [Authorize(Policy = "StaffOrAdmin")]
+    [Authorize(Policy = AuthorizationPolicies.StaffOrAdmin)]
     public async Task<ActionResult<LoanDto>> ReturnBook(Guid loanId, ReturnBookRequest request)
     {
         var loan = await loanService.ReturnBookAsync(loanId, request);
@@ -45,7 +46,7 @@ public class LoansController(ILoanService loanService) : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     public async Task<IActionResult> DeleteLoan(Guid id)
     {
         await loanService.DeleteLoanAsync(id);

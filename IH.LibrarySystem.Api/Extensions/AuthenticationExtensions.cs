@@ -1,4 +1,5 @@
 using System.Text;
+using IH.LibrarySystem.Application.Common.Security;
 using IH.LibrarySystem.Application.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -61,8 +62,8 @@ public static class AuthenticationExtensions
 
         services
             .AddAuthorizationBuilder()
-            .AddPolicy("AdminOnly", p => p.RequireRole("Admin"))
-            .AddPolicy("StaffOrAdmin", p => p.RequireRole("Staff", "Admin"));
+            .AddPolicy(AuthorizationPolicies.AdminOnly, p => p.RequireRole("Admin"))
+            .AddPolicy(AuthorizationPolicies.StaffOrAdmin, p => p.RequireRole("Staff", "Admin"));
 
         return services;
     }

@@ -1,3 +1,4 @@
+using IH.LibrarySystem.Application.Common.Security;
 using IH.LibrarySystem.Application.Members;
 using IH.LibrarySystem.Application.Members.Dtos;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,7 @@ namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Policy = "StaffOrAdmin")]
+[Authorize(Policy = AuthorizationPolicies.StaffOrAdmin)]
 public class MembersController(IMemberService memberService) : ControllerBase
 {
     [HttpGet("{id}")]

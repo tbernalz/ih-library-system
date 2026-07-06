@@ -1,5 +1,6 @@
 using IH.LibrarySystem.Application.Authors;
 using IH.LibrarySystem.Application.Authors.Dtos;
+using IH.LibrarySystem.Application.Common.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,7 @@ namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Policy = "StaffOrAdmin")]
+[Authorize(Policy = AuthorizationPolicies.StaffOrAdmin)]
 public class AuthorsController(IAuthorService authorService) : ControllerBase
 {
     [HttpGet("{id}")]
