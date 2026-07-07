@@ -14,4 +14,14 @@ public interface IRecommendationService
         int topK = 5,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Returns up to <paramref name="topK"/> AI-ranked book recommendations
+    /// for the currently authenticated user based on their loan history.
+    /// Books the user has already borrowed are excluded.
+    /// </summary>
+    Task<RecommendationsResponse> GetRecommendationsForCurrentUserAsync(
+        int topK = 5,
+        CancellationToken cancellationToken = default
+    );
 }

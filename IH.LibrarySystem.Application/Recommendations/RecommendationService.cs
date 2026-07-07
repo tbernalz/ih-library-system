@@ -1,5 +1,6 @@
 using System.Text;
 using IH.LibrarySystem.Application.Books.Dtos;
+using IH.LibrarySystem.Application.Common.Abstractions;
 using IH.LibrarySystem.Application.Discovery.Helpers;
 using IH.LibrarySystem.Application.Recommendations.Dtos;
 using IH.LibrarySystem.Domain.Books;
@@ -16,6 +17,7 @@ public sealed class RecommendationService(
     IBookDiscoveryRepository bookDiscoveryRepository,
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
     IChatClient chatClient,
+    ICurrentUserContext currentUserContext,
     ILogger<RecommendationService> logger
 ) : IRecommendationService
 {
@@ -131,6 +133,14 @@ public sealed class RecommendationService(
             .ToList();
 
         return new RecommendationsResponse(profileSummary, recommendations);
+    }
+
+    public async Task<RecommendationsResponse> GetRecommendationsForCurrentUserAsync(
+        int topK = 5,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await GetRecommendationsAsync(currentUserContext.UserId, topK, cancellationToken);
     }
 
     private static string BuildProfileText(List<Book> books)

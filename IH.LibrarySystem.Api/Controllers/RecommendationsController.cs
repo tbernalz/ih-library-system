@@ -11,8 +11,8 @@ public sealed class RecommendationsController(IRecommendationService recommendat
     : ControllerBase
 {
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<RecommendationsResponse>> GetRecommendations(
-        [FromQuery] Guid memberId,
         [FromQuery] int topK = 5,
         CancellationToken cancellationToken = default
     )
@@ -20,8 +20,7 @@ public sealed class RecommendationsController(IRecommendationService recommendat
         if (topK is < 1 or > 20)
             return BadRequest("topK must be between 1 and 20.");
 
-        var result = await recommendationService.GetRecommendationsAsync(
-            memberId,
+        var result = await recommendationService.GetRecommendationsForCurrentUserAsync(
             topK,
             cancellationToken
         );
