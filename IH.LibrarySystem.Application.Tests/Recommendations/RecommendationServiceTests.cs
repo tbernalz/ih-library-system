@@ -1,4 +1,5 @@
 using FluentAssertions;
+using IH.LibrarySystem.Application.Common.Abstractions;
 using IH.LibrarySystem.Application.Recommendations;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.Domain.Common;
@@ -18,6 +19,7 @@ public class RecommendationServiceTests
     private readonly IBookDiscoveryRepository _bookDiscoveryRepository;
     private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingGenerator;
     private readonly IChatClient _chatClient;
+    private readonly ICurrentUserContext _currentUserContext;
     private readonly ILogger<RecommendationService> _logger;
     private readonly RecommendationService _sut;
 
@@ -28,6 +30,7 @@ public class RecommendationServiceTests
         _bookDiscoveryRepository = Substitute.For<IBookDiscoveryRepository>();
         _embeddingGenerator = Substitute.For<IEmbeddingGenerator<string, Embedding<float>>>();
         _chatClient = Substitute.For<IChatClient>();
+        _currentUserContext = Substitute.For<ICurrentUserContext>();
         _logger = Substitute.For<ILogger<RecommendationService>>();
 
         _sut = new RecommendationService(
@@ -36,6 +39,7 @@ public class RecommendationServiceTests
             _bookDiscoveryRepository,
             _embeddingGenerator,
             _chatClient,
+            _currentUserContext,
             _logger
         );
     }

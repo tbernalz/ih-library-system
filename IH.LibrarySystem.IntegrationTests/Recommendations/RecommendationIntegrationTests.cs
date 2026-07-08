@@ -4,6 +4,7 @@ using FluentAssertions;
 using IH.LibrarySystem.Application.Recommendations.Dtos;
 using IH.LibrarySystem.Domain.Books;
 using IH.LibrarySystem.IntegrationTests.Abstractions;
+using IH.LibrarySystem.IntegrationTests.Auth;
 using IH.LibrarySystem.IntegrationTests.Collections;
 using IH.LibrarySystem.IntegrationTests.Fixtures;
 using IH.LibrarySystem.IntegrationTests.Support;
@@ -55,8 +56,9 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
             authorId
         );
 
+        Client.AsMember(memberId);
         var response = await Client.GetAsync(
-            new Uri($"/api/members/recommendations?memberId={memberId}", UriKind.Relative)
+            new Uri("/api/members/recommendations", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -79,8 +81,9 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
             TestDataFactory.UniqueEmail("new-member")
         );
 
+        Client.AsMember(memberId);
         var response = await Client.GetAsync(
-            new Uri($"/api/members/recommendations?memberId={memberId}", UriKind.Relative)
+            new Uri("/api/members/recommendations", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -96,8 +99,10 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
     [Fact]
     public async Task GetRecommendations_WhenMemberNotFound_Returns404()
     {
+        var nonExistentMemberId = Guid.NewGuid();
+        Client.AsMember(nonExistentMemberId);
         var response = await Client.GetAsync(
-            new Uri($"/api/members/recommendations?memberId={Guid.NewGuid()}", UriKind.Relative)
+            new Uri("/api/members/recommendations", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -111,8 +116,9 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
             TestDataFactory.UniqueEmail("val-member")
         );
 
+        Client.AsMember(memberId);
         var response = await Client.GetAsync(
-            new Uri($"/api/members/recommendations?memberId={memberId}&topK=0", UriKind.Relative)
+            new Uri("/api/members/recommendations?topK=0", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -126,8 +132,9 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
             TestDataFactory.UniqueEmail("val-member-max")
         );
 
+        Client.AsMember(memberId);
         var response = await Client.GetAsync(
-            new Uri($"/api/members/recommendations?memberId={memberId}&topK=99", UriKind.Relative)
+            new Uri("/api/members/recommendations?topK=99", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -163,8 +170,9 @@ public sealed class RecommendationIntegrationTests : BaseIntegrationTest
             );
         }
 
+        Client.AsMember(memberId);
         var response = await Client.GetAsync(
-            new Uri($"/api/members/recommendations?memberId={memberId}", UriKind.Relative)
+            new Uri("/api/members/recommendations", UriKind.Relative)
         );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);

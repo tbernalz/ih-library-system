@@ -1,3 +1,4 @@
+using IH.LibrarySystem.Application.Common.Abstractions;
 using IH.LibrarySystem.Application.Common.Exceptions;
 using IH.LibrarySystem.Application.Members.Dtos;
 using IH.LibrarySystem.Domain.Members;
@@ -9,12 +10,26 @@ namespace IH.LibrarySystem.Application.Members;
 public class MemberService(
     IMemberRepository repository,
     IUnitOfWork unitOfWork,
+    ICurrentUserContext currentUserContext,
     ILogger<MemberService> logger
 ) : IMemberService
 {
     public async Task<MemberDto> GetMemberByIdAsync(Guid memberId)
     {
         logger.LogDebug("Fetching member with {MemberId}", memberId);
+
+        if (currentUserContext.UserId != memberId && !currentUserContext.IsStaffOrAdmin)
+        {
+            logger.LogWarning(
+                "User {UserId} forbidden from accessing member data for {TargetMemberId}",
+                currentUserContext.UserId,
+                memberId
+            );
+
+            throw new ForbiddenException(
+                "You do not have permission to view this member's details."
+            );
+        }
 
         var member = await repository.GetByIdAsync(memberId);
 

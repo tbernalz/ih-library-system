@@ -23,6 +23,22 @@ public static class TestAuthHttpClientExtensions
     /// </summary>
     public static HttpClient AsMember(this HttpClient client) => client.AsRole("Member");
 
+    /// <summary>
+    /// Sends subsequent requests as the given member ID.
+    /// </summary>
+    public static HttpClient AsMember(this HttpClient client, Guid memberId)
+    {
+        client.DefaultRequestHeaders.Remove(TestAuthenticationHandler.RoleHeader);
+        client.DefaultRequestHeaders.Remove(TestAuthenticationHandler.AnonymousHeader);
+        client.DefaultRequestHeaders.Remove(TestAuthenticationHandler.UserIdHeader);
+        client.DefaultRequestHeaders.Add(TestAuthenticationHandler.RoleHeader, "Member");
+        client.DefaultRequestHeaders.Add(
+            TestAuthenticationHandler.UserIdHeader,
+            memberId.ToString()
+        );
+        return client;
+    }
+
     public static HttpClient AsStaff(this HttpClient client) => client.AsRole("Staff");
 
     public static HttpClient AsAdmin(this HttpClient client) => client.AsRole("Admin");

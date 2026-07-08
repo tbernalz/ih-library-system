@@ -21,6 +21,7 @@ public sealed class TestAuthenticationHandler : AuthenticationHandler<Authentica
 
     public const string RoleHeader = "X-Test-Role";
     public const string AnonymousHeader = "X-Test-Anonymous";
+    public const string UserIdHeader = "X-Test-UserId";
 
     public static readonly Guid DefaultUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     public const string DefaultEmail = "test-member@ihlibrary.local";
@@ -52,10 +53,19 @@ public sealed class TestAuthenticationHandler : AuthenticationHandler<Authentica
             role = roleValue!;
         }
 
+        var userId = DefaultUserId;
+        if (
+            Request.Headers.TryGetValue(UserIdHeader, out var userIdValue)
+            && Guid.TryParse(userIdValue, out var parsedUserId)
+        )
+        {
+            userId = parsedUserId;
+        }
+
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, DefaultUserId.ToString()),
-            new("sub", DefaultUserId.ToString()),
+            new(ClaimTypes.NameIdentifier, userId.ToString()),
+            new("sub", userId.ToString()),
             new(ClaimTypes.Email, DefaultEmail),
             new(ClaimTypes.Name, DefaultDisplayName),
             new(ClaimTypes.Role, role),
