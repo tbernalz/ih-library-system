@@ -50,7 +50,9 @@ public class RecommendationServiceTests
     public async Task GetRecommendationsAsync_WhenMemberNotFound_ThrowsKeyNotFoundException()
     {
         var memberId = Guid.NewGuid();
-        _memberRepository.GetByIdAsync(memberId).Returns((Member?)null);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns((Member?)null);
 
         var act = () => _sut.GetRecommendationsAsync(memberId);
 
@@ -62,7 +64,7 @@ public class RecommendationServiceTests
     {
         var memberId = Guid.NewGuid();
         _memberRepository
-            .GetByIdAsync(memberId)
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(Member.Create(memberId, "Test", "t@t.com"));
 
         var act = () => _sut.GetRecommendationsAsync(memberId, topK: 0);
@@ -79,10 +81,10 @@ public class RecommendationServiceTests
     {
         var memberId = Guid.NewGuid();
         _memberRepository
-            .GetByIdAsync(memberId)
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(Member.Create(memberId, "Test", "t@t.com"));
         _loanRepository
-            .SearchAsync(Arg.Any<LoanSearchFilter>())
+            .SearchAsync(Arg.Any<LoanSearchFilter>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(new PagedResult<Loan>([], 0, 1, 200));
 
         var result = await _sut.GetRecommendationsAsync(memberId);
@@ -108,14 +110,16 @@ public class RecommendationServiceTests
     {
         var memberId = Guid.NewGuid();
         var member = Member.Create(memberId, "Alice", "alice@test.com");
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
 
         var readBookId = Guid.NewGuid();
         var readBook = Book.Create(readBookId, "Read Book", "111", Guid.NewGuid(), "Fantasy");
         var loan = CreateLoanWithBook(readBookId, memberId, readBook);
 
         _loanRepository
-            .SearchAsync(Arg.Any<LoanSearchFilter>())
+            .SearchAsync(Arg.Any<LoanSearchFilter>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(new PagedResult<Loan>([loan], 1, 1, 200));
 
         var candidateId = Guid.NewGuid();
@@ -150,14 +154,16 @@ public class RecommendationServiceTests
     {
         var memberId = Guid.NewGuid();
         var member = Member.Create(memberId, "Bob", "bob@test.com");
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
 
         var readBookId = Guid.NewGuid();
         var readBook = Book.Create(readBookId, "Read Book", "111", Guid.NewGuid(), "SciFi");
         var loan = CreateLoanWithBook(readBookId, memberId, readBook);
 
         _loanRepository
-            .SearchAsync(Arg.Any<LoanSearchFilter>())
+            .SearchAsync(Arg.Any<LoanSearchFilter>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(new PagedResult<Loan>([loan], 1, 1, 200));
 
         _bookDiscoveryRepository

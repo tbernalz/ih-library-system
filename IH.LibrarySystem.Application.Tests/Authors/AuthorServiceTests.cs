@@ -36,7 +36,9 @@ public class AuthorServiceTests
     {
         var authorId = Guid.NewGuid();
         var author = Author.Create(authorId, "Test Author", "author@test.com", "Test bio");
-        _authorRepository.GetByIdAsync(authorId).Returns(author);
+        _authorRepository
+            .GetByIdAsync(authorId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(author);
 
         var result = await _sut.GetAuthorByIdAsync(authorId);
 
@@ -49,7 +51,9 @@ public class AuthorServiceTests
     public async Task GetAuthorByIdAsync_WhenAuthorNotFound_ShouldThrowKeyNotFoundException()
     {
         var authorId = Guid.NewGuid();
-        _authorRepository.GetByIdAsync(authorId).Returns((Author?)null);
+        _authorRepository
+            .GetByIdAsync(authorId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns((Author?)null);
 
         var act = () => _sut.GetAuthorByIdAsync(authorId);
 
@@ -64,7 +68,9 @@ public class AuthorServiceTests
     public async Task CreateAuthorAsync_WithValidRequest_ShouldCreateAuthor()
     {
         var request = new CreateAuthorRequest("New Author", "newauthor@test.com", "Bio");
-        _authorRepository.GetByEmailAsync(request.Email).Returns((Author?)null);
+        _authorRepository
+            .GetByEmailAsync(request.Email, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns((Author?)null);
 
         var result = await _sut.CreateAuthorAsync(request);
 
@@ -79,7 +85,9 @@ public class AuthorServiceTests
     {
         var existingAuthor = Author.Create(Guid.NewGuid(), "Existing", "dup@test.com", "Bio");
         var request = new CreateAuthorRequest("New", "dup@test.com", "Bio");
-        _authorRepository.GetByEmailAsync(request.Email).Returns(existingAuthor);
+        _authorRepository
+            .GetByEmailAsync(request.Email, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(existingAuthor);
 
         var act = () => _sut.CreateAuthorAsync(request);
 
@@ -97,7 +105,9 @@ public class AuthorServiceTests
         var authorId = Guid.NewGuid();
         var author = Author.Create(authorId, "Same", "same@test.com", "Same bio");
         var request = new UpdateAuthorRequest("Same", "same@test.com", "Same bio");
-        _authorRepository.GetByIdAsync(authorId).Returns(author);
+        _authorRepository
+            .GetByIdAsync(authorId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(author);
 
         await _sut.UpdateAuthorAsync(authorId, request);
 
@@ -113,8 +123,12 @@ public class AuthorServiceTests
     {
         var authorId = Guid.NewGuid();
         var author = Author.Create(authorId, "Author", "a@a.com", "Bio");
-        _authorRepository.GetByIdAsync(authorId).Returns(author);
-        _bookRepository.HasBooksByAuthorIdAsync(authorId).Returns(true);
+        _authorRepository
+            .GetByIdAsync(authorId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(author);
+        _bookRepository
+            .HasBooksByAuthorIdAsync(authorId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(true);
 
         var act = () => _sut.DeleteAuthorAsync(authorId);
 

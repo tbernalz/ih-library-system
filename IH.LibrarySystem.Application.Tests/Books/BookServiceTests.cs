@@ -46,7 +46,9 @@ public class BookServiceTests
     {
         var bookId = Guid.NewGuid();
         var book = CreateDummyBook(bookId);
-        _bookRepository.GetByIdAsync(bookId).Returns(book);
+        _bookRepository
+            .GetByIdAsync(bookId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(book);
 
         var result = await _sut.GetBookByIdAsync(bookId);
 
@@ -59,7 +61,9 @@ public class BookServiceTests
     public async Task GetBookByIdAsync_WhenBookNotFound_ShouldThrowKeyNotFoundException()
     {
         var bookId = Guid.NewGuid();
-        _bookRepository.GetByIdAsync(bookId).Returns((Book?)null);
+        _bookRepository
+            .GetByIdAsync(bookId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns((Book?)null);
 
         var act = () => _sut.GetBookByIdAsync(bookId);
 
@@ -78,7 +82,11 @@ public class BookServiceTests
         var pagedResult = new PagedResult<Book>(books, 2, 1, 10);
 
         _bookRepository
-            .SearchAsync(Arg.Is<BookSearchFilter>(f => f.SearchTerm == "test" && f.PageNumber == 1))
+            .SearchAsync(
+                Arg.Is<BookSearchFilter>(f => f.SearchTerm == "test" && f.PageNumber == 1),
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(pagedResult);
 
         var result = await _sut.SearchBooksAsync(request);
@@ -98,8 +106,12 @@ public class BookServiceTests
         var author = Author.Create(authorId, "Author", "a@a.com", "Bio");
         var request = new CreateBookRequest("New Book", "1234567890", "Fiction", authorId);
 
-        _bookRepository.GetByIsbnAsync(request.Isbn).Returns((Book?)null);
-        _authorRepository.GetByIdAsync(authorId).Returns(author);
+        _bookRepository
+            .GetByIsbnAsync(request.Isbn, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns((Book?)null);
+        _authorRepository
+            .GetByIdAsync(authorId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(author);
 
         var result = await _sut.CreateBookAsync(request);
 
@@ -112,7 +124,9 @@ public class BookServiceTests
     public async Task CreateBookAsync_WithDuplicateIsbn_ShouldThrowInvalidOperationException()
     {
         var request = new CreateBookRequest("New Book", "1234567890", "Fiction", Guid.NewGuid());
-        _bookRepository.GetByIsbnAsync(request.Isbn).Returns(CreateDummyBook());
+        _bookRepository
+            .GetByIsbnAsync(request.Isbn, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(CreateDummyBook());
 
         var act = () => _sut.CreateBookAsync(request);
 
@@ -132,7 +146,9 @@ public class BookServiceTests
         var bookId = Guid.NewGuid();
         var book = Book.Create(bookId, "Title", "123", Guid.NewGuid(), "Genre");
         var request = new UpdateBookRequest("Title", "123", "Genre");
-        _bookRepository.GetByIdAsync(bookId).Returns(book);
+        _bookRepository
+            .GetByIdAsync(bookId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(book);
 
         await _sut.UpdateBookAsync(bookId, request);
 
@@ -148,7 +164,9 @@ public class BookServiceTests
     {
         var bookId = Guid.NewGuid();
         var book = CreateDummyBook(bookId);
-        _bookRepository.GetByIdAsync(bookId).Returns(book);
+        _bookRepository
+            .GetByIdAsync(bookId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(book);
 
         await _sut.DeleteBookAsync(bookId);
 

@@ -63,19 +63,37 @@ public class NotificationServiceTests
         var member = Member.Create(memberId, memberName, memberEmail);
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
         _unitOfWork.SaveChangesAsync().Returns(1);
 
         await _sut.SendOverdueReminderAsync(loanId);
 
         await _notificationLogRepository
             .Received(1)
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder);
-        await _loanRepository.Received(1).GetWithBookAsync(loanId);
-        await _memberRepository.Received(1).GetByIdAsync(memberId);
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            );
+        await _loanRepository
+            .Received(1)
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await _memberRepository
+            .Received(1)
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>());
         await _emailNotificationService
             .Received(1)
             .SendOverdueReminderAsync(
@@ -108,10 +126,19 @@ public class NotificationServiceTests
         var member = Member.Create(memberId, "Test User", "test@example.com", null);
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
         _unitOfWork.SaveChangesAsync().Returns(1);
 
         await _sut.SendOverdueReminderAsync(loanId);
@@ -132,10 +159,19 @@ public class NotificationServiceTests
         var member = Member.Create(memberId, "Test User", "test@example.com", null);
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
         _unitOfWork.SaveChangesAsync().Returns(1);
 
         await _sut.SendOverdueReminderAsync(loanId);
@@ -155,13 +191,22 @@ public class NotificationServiceTests
         var loanId = Guid.NewGuid();
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(true);
 
         await _sut.SendOverdueReminderAsync(loanId);
 
-        await _loanRepository.DidNotReceive().GetWithBookAsync(Arg.Any<Guid>());
-        await _memberRepository.DidNotReceive().GetByIdAsync(Arg.Any<Guid>());
+        await _loanRepository
+            .DidNotReceive()
+            .GetWithBookAsync(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await _memberRepository
+            .DidNotReceive()
+            .GetByIdAsync(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
         await _emailNotificationService
             .DidNotReceive()
             .SendOverdueReminderAsync(Arg.Any<OverdueReminderContext>());
@@ -179,9 +224,16 @@ public class NotificationServiceTests
         var loanId = Guid.NewGuid();
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns((Loan?)null);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns((Loan?)null);
 
         var act = () => _sut.SendOverdueReminderAsync(loanId);
 
@@ -189,7 +241,9 @@ public class NotificationServiceTests
             .ThrowAsync<KeyNotFoundException>()
             .WithMessage($"Loan with ID {loanId} not found");
 
-        await _memberRepository.DidNotReceive().GetByIdAsync(Arg.Any<Guid>());
+        await _memberRepository
+            .DidNotReceive()
+            .GetByIdAsync(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
         await _emailNotificationService
             .DidNotReceive()
             .SendOverdueReminderAsync(Arg.Any<OverdueReminderContext>());
@@ -211,9 +265,16 @@ public class NotificationServiceTests
         var loan = CreateLoan(loanId, bookId, memberId, dueDate);
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
 
         var act = () => _sut.SendOverdueReminderAsync(loanId);
 
@@ -221,7 +282,9 @@ public class NotificationServiceTests
             .ThrowAsync<InvalidOperationException>()
             .WithMessage($"Loan {loanId} is not overdue");
 
-        await _memberRepository.DidNotReceive().GetByIdAsync(Arg.Any<Guid>());
+        await _memberRepository
+            .DidNotReceive()
+            .GetByIdAsync(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
         await _emailNotificationService
             .DidNotReceive()
             .SendOverdueReminderAsync(Arg.Any<OverdueReminderContext>());
@@ -239,9 +302,16 @@ public class NotificationServiceTests
         var loan = CreateLoan(loanId, bookId, memberId, dueDate);
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
 
         var act = () => _sut.SendOverdueReminderAsync(loanId);
 
@@ -249,7 +319,9 @@ public class NotificationServiceTests
             .ThrowAsync<InvalidOperationException>()
             .WithMessage($"Loan {loanId} is not overdue");
 
-        await _memberRepository.DidNotReceive().GetByIdAsync(Arg.Any<Guid>());
+        await _memberRepository
+            .DidNotReceive()
+            .GetByIdAsync(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
         await _emailNotificationService
             .DidNotReceive()
             .SendOverdueReminderAsync(Arg.Any<OverdueReminderContext>());
@@ -271,10 +343,19 @@ public class NotificationServiceTests
         var loan = CreateLoan(loanId, bookId, memberId, dueDate);
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.GetByIdAsync(memberId).Returns((Member?)null);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns((Member?)null);
 
         var act = () => _sut.SendOverdueReminderAsync(loanId);
 
@@ -304,10 +385,19 @@ public class NotificationServiceTests
         var member = Member.Create(memberId, "Test User", "test@seeded.ihlibrary.local", null);
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
 
         await _sut.SendOverdueReminderAsync(loanId);
 
@@ -329,10 +419,19 @@ public class NotificationServiceTests
         var member = Member.Create(memberId, "Test User", "test@SEEDED.IHLIBRARY.LOCAL", null);
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
 
         await _sut.SendOverdueReminderAsync(loanId);
 
@@ -359,10 +458,19 @@ public class NotificationServiceTests
         var expectedException = new InvalidOperationException("SendGrid API error");
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
         _emailNotificationService
             .When(x => x.SendOverdueReminderAsync(Arg.Any<OverdueReminderContext>()))
             .Do(x => throw expectedException);
@@ -388,14 +496,23 @@ public class NotificationServiceTests
         var expectedException = new TimeoutException("Database timeout");
 
         _notificationLogRepository
-            .When(x => x.ExistsAsync(loanId, NotificationType.OverdueLoanReminder))
+            .When(x =>
+                x.ExistsAsync(
+                    loanId,
+                    NotificationType.OverdueLoanReminder,
+                    Arg.Any<bool>(),
+                    Arg.Any<CancellationToken>()
+                )
+            )
             .Do(x => throw expectedException);
 
         var act = () => _sut.SendOverdueReminderAsync(loanId);
 
         await act.Should().ThrowAsync<TimeoutException>().WithMessage("Database timeout");
 
-        await _loanRepository.DidNotReceive().GetWithBookAsync(Arg.Any<Guid>());
+        await _loanRepository
+            .DidNotReceive()
+            .GetWithBookAsync(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -405,15 +522,24 @@ public class NotificationServiceTests
         var expectedException = new TimeoutException("Database timeout");
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.When(x => x.GetWithBookAsync(loanId)).Do(x => throw expectedException);
+        _loanRepository
+            .When(x => x.GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>()))
+            .Do(x => throw expectedException);
 
         var act = () => _sut.SendOverdueReminderAsync(loanId);
 
         await act.Should().ThrowAsync<TimeoutException>().WithMessage("Database timeout");
 
-        await _memberRepository.DidNotReceive().GetByIdAsync(Arg.Any<Guid>());
+        await _memberRepository
+            .DidNotReceive()
+            .GetByIdAsync(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -427,10 +553,19 @@ public class NotificationServiceTests
         var expectedException = new TimeoutException("Database timeout");
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.When(x => x.GetByIdAsync(memberId)).Do(x => throw expectedException);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .When(x => x.GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>()))
+            .Do(x => throw expectedException);
 
         var act = () => _sut.SendOverdueReminderAsync(loanId);
 
@@ -453,10 +588,19 @@ public class NotificationServiceTests
         var expectedException = new DbUpdateException("Concurrency conflict");
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
         _unitOfWork.When(x => x.SaveChangesAsync()).Do(x => throw expectedException);
 
         var act = () => _sut.SendOverdueReminderAsync(loanId);
@@ -484,10 +628,19 @@ public class NotificationServiceTests
         var member = Member.Create(memberId, "Grace Lee", "grace@example.com");
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
         _unitOfWork.SaveChangesAsync().Returns(1);
 
         await _sut.SendOverdueReminderAsync(loanId);
@@ -513,10 +666,19 @@ public class NotificationServiceTests
         var member = Member.Create(memberId, "Test User", "test@example.com", null);
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
         _unitOfWork.SaveChangesAsync().Returns(1);
 
         await _sut.SendOverdueReminderAsync(loanId);
@@ -540,10 +702,19 @@ public class NotificationServiceTests
         var member = Member.Create(memberId, memberName, "test@example.com", null);
 
         _notificationLogRepository
-            .ExistsAsync(loanId, NotificationType.OverdueLoanReminder)
+            .ExistsAsync(
+                loanId,
+                NotificationType.OverdueLoanReminder,
+                Arg.Any<bool>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(false);
-        _loanRepository.GetWithBookAsync(loanId).Returns(loan);
-        _memberRepository.GetByIdAsync(memberId).Returns(member);
+        _loanRepository
+            .GetWithBookAsync(loanId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(loan);
+        _memberRepository
+            .GetByIdAsync(memberId, Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(member);
         _unitOfWork.SaveChangesAsync().Returns(1);
 
         await _sut.SendOverdueReminderAsync(loanId);
