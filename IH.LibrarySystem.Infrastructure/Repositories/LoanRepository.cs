@@ -9,14 +9,31 @@ public class LoanRepository(LibraryDbContext context)
     : BaseRepository<Loan>(context),
         ILoanRepository
 {
-    public async Task<Loan?> GetWithBookAsync(Guid loanId)
+    public async Task<Loan?> GetWithBookAsync(
+        Guid loanId,
+        bool readOnly = false,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await Context.Loans.Include(l => l.Book).FirstOrDefaultAsync(l => l.Id == loanId);
+        var query = Context.Loans.Include(l => l.Book).AsQueryable();
+        if (readOnly)
+        {
+            query = query.AsNoTracking();
+        }
+        return await query.FirstOrDefaultAsync(l => l.Id == loanId, cancellationToken);
     }
 
-    public async Task<PagedResult<Loan>> SearchAsync(LoanSearchFilter filter)
+    public async Task<PagedResult<Loan>> SearchAsync(
+        LoanSearchFilter filter,
+        bool readOnly = false,
+        CancellationToken cancellationToken = default
+    )
     {
-        var query = DbSet.AsNoTracking();
+        var query = DbSet.AsQueryable();
+        if (readOnly)
+        {
+            query = query.AsNoTracking();
+        }
 
         if (filter.MemberId.HasValue)
             query = query.Where(l => l.MemberId == filter.MemberId);
@@ -30,14 +47,14 @@ public class LoanRepository(LibraryDbContext context)
         if (filter.IsOverdue == true)
             query = query.Where(l => l.ReturnDate == null && l.DueDate < DateTime.UtcNow);
 
-        var totalCount = await query.CountAsync();
+        var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
             .OrderByDescending(l => l.LoanDate)
             .Skip((filter.PageNumber - 1) * filter.PageSize)
             .Take(filter.PageSize)
             .Include(l => l.Book)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return new PagedResult<Loan>(items, totalCount, filter.PageNumber, filter.PageSize);
     }

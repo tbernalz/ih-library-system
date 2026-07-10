@@ -8,11 +8,20 @@ public class MemberRepository(LibraryDbContext context)
     : BaseRepository<Member>(context),
         IMemberRepository
 {
-    public async Task<Member?> GetByEmailAsync(string email)
+    public async Task<Member?> GetByEmailAsync(
+        string email,
+        bool readOnly = false,
+        CancellationToken cancellationToken = default
+    )
     {
         if (string.IsNullOrWhiteSpace(email))
             return null;
 
-        return await DbSet.FirstOrDefaultAsync(m => m.Email == email);
+        var query = DbSet.AsQueryable();
+        if (readOnly)
+        {
+            query = query.AsNoTracking();
+        }
+        return await query.FirstOrDefaultAsync(m => m.Email == email, cancellationToken);
     }
 }

@@ -9,19 +9,45 @@ public class BookRepository(LibraryDbContext context)
     : BaseRepository<Book>(context),
         IBookRepository
 {
-    public async Task<Book?> GetByIsbnAsync(string isbn)
+    public async Task<Book?> GetByIsbnAsync(
+        string isbn,
+        bool readOnly = false,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await DbSet.FirstOrDefaultAsync(b => b.Isbn == isbn);
+        var query = DbSet.AsQueryable();
+        if (readOnly)
+        {
+            query = query.AsNoTracking();
+        }
+        return await query.FirstOrDefaultAsync(b => b.Isbn == isbn, cancellationToken);
     }
 
-    public async Task<bool> HasBooksByAuthorIdAsync(Guid authorId)
+    public async Task<bool> HasBooksByAuthorIdAsync(
+        Guid authorId,
+        bool readOnly = false,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await DbSet.AnyAsync(b => b.AuthorId == authorId);
+        var query = DbSet.AsQueryable();
+        if (readOnly)
+        {
+            query = query.AsNoTracking();
+        }
+        return await query.AnyAsync(b => b.AuthorId == authorId, cancellationToken);
     }
 
-    public async Task<PagedResult<Book>> SearchAsync(BookSearchFilter filter)
+    public async Task<PagedResult<Book>> SearchAsync(
+        BookSearchFilter filter,
+        bool readOnly = false,
+        CancellationToken cancellationToken = default
+    )
     {
-        var query = DbSet.AsNoTracking();
+        var query = DbSet.AsQueryable();
+        if (readOnly)
+        {
+            query = query.AsNoTracking();
+        }
 
         if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
         {

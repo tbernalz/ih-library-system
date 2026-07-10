@@ -10,12 +10,17 @@ internal sealed class NotificationLogRepository(LibraryDbContext context)
     public async Task<bool> ExistsAsync(
         Guid loanId,
         NotificationType type,
+        bool readOnly = false,
         CancellationToken cancellationToken = default
-    ) =>
-        await context.NotificationLogs.AnyAsync(
-            n => n.LoanId == loanId && n.Type == type,
-            cancellationToken
-        );
+    )
+    {
+        var query = context.NotificationLogs.AsQueryable();
+        if (readOnly)
+        {
+            query = query.AsNoTracking();
+        }
+        return await query.AnyAsync(n => n.LoanId == loanId && n.Type == type, cancellationToken);
+    }
 
     public async Task AddAsync(
         NotificationLog log,

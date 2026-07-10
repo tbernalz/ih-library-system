@@ -9,9 +9,20 @@ public sealed class UserRepository(LibraryDbContext context)
     : BaseRepository<User>(context),
         IUserRepository
 {
-    public async Task<User?> GetByGoogleSubjectIdAsync(string googleSubjectId) =>
-        await DbSet.FirstOrDefaultAsync(u => u.GoogleSubjectId == googleSubjectId);
-
-    public async Task<User?> GetByEmailAsync(string email) =>
-        await DbSet.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email);
+    public async Task<User?> GetByGoogleSubjectIdAsync(
+        string googleSubjectId,
+        bool readOnly = false,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var query = DbSet.AsQueryable();
+        if (readOnly)
+        {
+            query = query.AsNoTracking();
+        }
+        return await query.FirstOrDefaultAsync(
+            u => u.GoogleSubjectId == googleSubjectId,
+            cancellationToken
+        );
+    }
 }

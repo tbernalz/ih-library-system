@@ -8,8 +8,17 @@ public class AuthorRepository(LibraryDbContext context)
     : BaseRepository<Author>(context),
         IAuthorRepository
 {
-    public async Task<Author?> GetByEmailAsync(string email)
+    public async Task<Author?> GetByEmailAsync(
+        string email,
+        bool readOnly = false,
+        CancellationToken cancellationToken = default
+    )
     {
-        return await DbSet.AsNoTracking().FirstOrDefaultAsync(a => a.Email == email);
+        var query = DbSet.AsQueryable();
+        if (readOnly)
+        {
+            query = query.AsNoTracking();
+        }
+        return await query.FirstOrDefaultAsync(a => a.Email == email, cancellationToken);
     }
 }
