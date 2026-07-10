@@ -32,12 +32,19 @@ public sealed class RecommendationService(
         if (topK <= 0)
             throw new ArgumentOutOfRangeException(nameof(topK), "topK must be greater than zero.");
 
-        var member = await memberRepository.GetByIdAsync(memberId);
-        if (member is null)
-            throw new KeyNotFoundException($"Member with ID {memberId} not found.");
+        var member = await memberRepository.GetByIdAsync(
+            memberId,
+            readOnly: true,
+            cancellationToken
+        );
+        _ = member ?? throw new KeyNotFoundException($"Member with ID {memberId} not found.");
 
         var historyFilter = new LoanSearchFilter(MemberId: memberId, PageNumber: 1, PageSize: 200);
-        var loanPage = await loanRepository.SearchAsync(historyFilter);
+        var loanPage = await loanRepository.SearchAsync(
+            historyFilter,
+            readOnly: true,
+            cancellationToken
+        );
         var borrowedBookIds = loanPage.Items.Select(l => l.BookId).ToHashSet();
 
         logger.LogDebug(
@@ -58,7 +65,7 @@ public sealed class RecommendationService(
             );
         }
 
-        var profileText = BuildProfileText(loanPage.Items.Select(l => l.Book).ToList());
+        var profileText = BuildProfileText([.. loanPage.Items.Select(l => l.Book)]);
 
         var embeddingResult = await embeddingGenerator.GenerateAsync(
             [profileText],
@@ -97,8 +104,8 @@ public sealed class RecommendationService(
 
         var prompt = BuildPrompt(
             member.Name,
-            loanPage.Items.Select(l => l.Book).ToList(),
-            filtered.Select(c => c.Book).ToList()
+            [.. loanPage.Items.Select(l => l.Book)],
+            [.. filtered.Select(c => c.Book)]
         );
 
         logger.LogDebug(

@@ -21,7 +21,7 @@ public class BookService(
     {
         logger.LogDebug("Fetching book {BookId}", bookId);
 
-        var book = await bookRepository.GetByIdAsync(bookId);
+        var book = await bookRepository.GetByIdAsync(bookId, readOnly: true);
         if (book is null)
         {
             logger.LogWarning("Book retrieval failed: ID {BookId} not found", bookId);
@@ -36,10 +36,10 @@ public class BookService(
         logger.LogDebug("Searching books with term: {SearchTerm}", request.SearchTerm);
 
         var filter = new BookSearchFilter(request.SearchTerm, request.PageNumber, request.PageSize);
-        var result = await bookRepository.SearchAsync(filter);
+        var result = await bookRepository.SearchAsync(filter, readOnly: true);
 
         return new PagedResult<BookDto>(
-            result.Items.Select(MapToDto).ToList(),
+            [.. result.Items.Select(MapToDto)],
             result.TotalCount,
             result.PageNumber,
             result.PageSize
@@ -50,7 +50,7 @@ public class BookService(
     {
         logger.LogInformation("Initiating book creation: request {request}", request);
 
-        var existingBook = await bookRepository.GetByIsbnAsync(request.Isbn);
+        var existingBook = await bookRepository.GetByIsbnAsync(request.Isbn, readOnly: true);
 
         if (existingBook is not null)
         {
@@ -63,7 +63,7 @@ public class BookService(
             throw validationException;
         }
 
-        var author = await authorRepository.GetByIdAsync(request.AuthorId);
+        var author = await authorRepository.GetByIdAsync(request.AuthorId, readOnly: true);
         if (author is null)
         {
             logger.LogWarning("CreateBook failed: Author {AuthorId} not found", request.AuthorId);
@@ -93,7 +93,7 @@ public class BookService(
 
         logger.LogInformation("Initiating update for book: {BookId}", bookId);
 
-        var book = await bookRepository.GetByIdAsync(bookId);
+        var book = await bookRepository.GetByIdAsync(bookId, readOnly: false);
         if (book is null)
         {
             logger.LogWarning("UpdateBook failed: Book {BookId} not found", bookId);
@@ -106,7 +106,7 @@ public class BookService(
             return MapToDto(book);
         }
 
-        var existingBook = await bookRepository.GetByIsbnAsync(request.Isbn);
+        var existingBook = await bookRepository.GetByIsbnAsync(request.Isbn, readOnly: true);
 
         if (existingBook is not null && existingBook.Id != book.Id)
         {
@@ -130,7 +130,7 @@ public class BookService(
     {
         logger.LogInformation("Initiating book deletion: {BookId}", bookId);
 
-        var book = await bookRepository.GetByIdAsync(bookId);
+        var book = await bookRepository.GetByIdAsync(bookId, readOnly: false);
         if (book is null)
         {
             logger.LogWarning("DeleteBook failed: Book {BookId} not found", bookId);

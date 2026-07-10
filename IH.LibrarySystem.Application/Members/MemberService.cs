@@ -31,7 +31,7 @@ public class MemberService(
             );
         }
 
-        var member = await repository.GetByIdAsync(memberId);
+        var member = await repository.GetByIdAsync(memberId, readOnly: true);
 
         if (member is null)
         {
@@ -46,7 +46,7 @@ public class MemberService(
     {
         logger.LogInformation("Initiating member registration: request {request}", request);
 
-        var existing = await repository.GetByEmailAsync(request.Email);
+        var existing = await repository.GetByEmailAsync(request.Email, readOnly: true);
 
         if (existing is not null)
         {
@@ -75,7 +75,7 @@ public class MemberService(
             request
         );
 
-        var member = await repository.GetByIdAsync(memberId);
+        var member = await repository.GetByIdAsync(memberId, readOnly: false);
 
         if (member is null)
         {
@@ -91,7 +91,7 @@ public class MemberService(
 
         if (!string.Equals(member.Email, request.Email, StringComparison.OrdinalIgnoreCase))
         {
-            var existing = await repository.GetByEmailAsync(request.Email);
+            var existing = await repository.GetByEmailAsync(request.Email, readOnly: true);
             if (existing is not null)
             {
                 logger.LogWarning(
@@ -115,15 +115,13 @@ public class MemberService(
     {
         logger.LogInformation("Initiating member deletion: {MemberId}", memberId);
 
-        var member = await repository.GetByIdAsync(memberId);
+        var member = await repository.GetByIdAsync(memberId, readOnly: false);
 
         if (member is null)
         {
             logger.LogWarning("DeleteMember failed: Member {MemberId} not found", memberId);
             throw new NotFoundException(nameof(Member), memberId);
         }
-
-        // we can't delete a member who has active loans
 
         repository.Delete(member);
         await unitOfWork.SaveChangesAsync();
@@ -137,7 +135,7 @@ public class MemberService(
             request.Status
         );
 
-        var member = await repository.GetByIdAsync(memberId);
+        var member = await repository.GetByIdAsync(memberId, readOnly: false);
 
         if (member is null)
         {

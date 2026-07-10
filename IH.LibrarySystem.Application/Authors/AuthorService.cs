@@ -18,7 +18,7 @@ public class AuthorService(
     {
         logger.LogDebug("Fetching author with {AuthorId}", authorId);
 
-        var author = await repository.GetByIdAsync(authorId);
+        var author = await repository.GetByIdAsync(authorId, readOnly: true);
         if (author is null)
         {
             logger.LogWarning("Author retrieval failed: ID {AuthorId} not found", authorId);
@@ -32,7 +32,7 @@ public class AuthorService(
     {
         logger.LogInformation("Initiating author creation: request {request}", request);
 
-        var existing = await repository.GetByEmailAsync(request.Email);
+        var existing = await repository.GetByEmailAsync(request.Email, readOnly: true);
 
         if (existing is not null)
         {
@@ -60,7 +60,7 @@ public class AuthorService(
             request
         );
 
-        var author = await repository.GetByIdAsync(authorId);
+        var author = await repository.GetByIdAsync(authorId, readOnly: false);
         if (author is null)
         {
             logger.LogWarning("UpdateAuthor failed: Author {AuthorId} not found", authorId);
@@ -79,7 +79,7 @@ public class AuthorService(
 
         if (!string.Equals(author.Email, request.Email, StringComparison.OrdinalIgnoreCase))
         {
-            var existing = await repository.GetByEmailAsync(request.Email);
+            var existing = await repository.GetByEmailAsync(request.Email, readOnly: true);
             if (existing is not null)
             {
                 logger.LogWarning(
@@ -103,14 +103,14 @@ public class AuthorService(
     {
         logger.LogInformation("Initiating author deletion: {AuthorId}", authorId);
 
-        var author = await repository.GetByIdAsync(authorId);
+        var author = await repository.GetByIdAsync(authorId, readOnly: false);
         if (author is null)
         {
             logger.LogWarning("DeleteAuthor failed: Author {AuthorId} not found", authorId);
             throw new NotFoundException(nameof(Author), authorId);
         }
 
-        var hasBooks = await bookRepository.HasBooksByAuthorIdAsync(authorId);
+        var hasBooks = await bookRepository.HasBooksByAuthorIdAsync(authorId, readOnly: true);
         if (hasBooks)
         {
             logger.LogWarning(

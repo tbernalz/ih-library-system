@@ -47,7 +47,11 @@ public sealed class AuthService(
             throw new UnauthorizedAccessException("Google has not verified this email address.");
         }
 
-        var user = await userRepository.GetByGoogleSubjectIdAsync(identity.Subject);
+        var user = await userRepository.GetByGoogleSubjectIdAsync(
+            identity.Subject,
+            readOnly: true,
+            cancellationToken
+        );
 
         if (user is null)
         {
@@ -68,7 +72,11 @@ public sealed class AuthService(
 
             if (user.Role == UserRole.Member)
             {
-                var existingMember = await memberRepository.GetByEmailAsync(identity.Email);
+                var existingMember = await memberRepository.GetByEmailAsync(
+                    identity.Email,
+                    readOnly: true,
+                    cancellationToken
+                );
                 if (existingMember is null)
                 {
                     var member = Member.Create(Guid.NewGuid(), identity.Name, identity.Email);
@@ -101,12 +109,13 @@ public sealed class AuthService(
     )
     {
         var incomingHash = refreshTokenHasher.Hash(request.RefreshToken);
-        var existing = await refreshTokenRepository.GetByTokenHashAsync(incomingHash);
+        var existing = await refreshTokenRepository.GetByTokenHashAsync(
+            incomingHash,
+            readOnly: true,
+            cancellationToken
+        );
 
-        if (existing is null)
-        {
-            throw new InvalidRefreshTokenException("token not recognized");
-        }
+        _ = existing ?? throw new InvalidRefreshTokenException("token not recognized");
 
         if (existing.IsRevoked)
         {
@@ -124,7 +133,11 @@ public sealed class AuthService(
             throw new InvalidRefreshTokenException("token has expired");
         }
 
-        var user = await userRepository.GetByIdAsync(existing.UserId);
+        var user = await userRepository.GetByIdAsync(
+            existing.UserId,
+            readOnly: false,
+            cancellationToken
+        );
         if (user is null || user.IsDisabled)
         {
             throw new InvalidRefreshTokenException("associated user is missing or disabled");
@@ -166,7 +179,11 @@ public sealed class AuthService(
     )
     {
         var hash = refreshTokenHasher.Hash(request.RefreshToken);
-        var existing = await refreshTokenRepository.GetByTokenHashAsync(hash);
+        var existing = await refreshTokenRepository.GetByTokenHashAsync(
+            hash,
+            readOnly: true,
+            cancellationToken
+        );
 
         if (existing is null || existing.IsRevoked)
         {
@@ -183,7 +200,7 @@ public sealed class AuthService(
     {
         var userId = currentUserContext.UserId;
         var user =
-            await userRepository.GetByIdAsync(userId)
+            await userRepository.GetByIdAsync(userId, readOnly: true, cancellationToken)
             ?? throw new Common.Exceptions.NotFoundException(nameof(User), userId);
 
         return new CurrentUserDto(

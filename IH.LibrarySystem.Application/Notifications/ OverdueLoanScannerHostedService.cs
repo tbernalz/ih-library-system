@@ -56,7 +56,11 @@ public sealed class OverdueLoanScannerHostedService(
             PageSize: 200
         );
 
-        var overdueLoans = await loanRepository.SearchAsync(overdueFilter);
+        var overdueLoans = await loanRepository.SearchAsync(
+            overdueFilter,
+            readOnly: true,
+            cancellationToken
+        );
 
         if (overdueLoans.TotalCount == 0)
         {
@@ -75,10 +79,10 @@ public sealed class OverdueLoanScannerHostedService(
 
             try
             {
-                // Idempotency: skip if we already notified for this loan.
                 var alreadySent = await notificationLogRepository.ExistsAsync(
                     loan.Id,
                     NotificationType.OverdueLoanReminder,
+                    readOnly: true,
                     cancellationToken
                 );
 
@@ -88,7 +92,11 @@ public sealed class OverdueLoanScannerHostedService(
                     continue;
                 }
 
-                var member = await memberRepository.GetByIdAsync(loan.MemberId);
+                var member = await memberRepository.GetByIdAsync(
+                    loan.MemberId,
+                    readOnly: true,
+                    cancellationToken
+                );
                 if (member is null)
                 {
                     logger.LogWarning(

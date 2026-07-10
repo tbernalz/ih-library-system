@@ -43,6 +43,7 @@ public sealed class NotificationService(
         var alreadySent = await notificationLogRepository.ExistsAsync(
             loanId,
             NotificationType.OverdueLoanReminder,
+            readOnly: true,
             cancellationToken
         );
 
@@ -52,7 +53,7 @@ public sealed class NotificationService(
             return;
         }
 
-        var loan = await loanRepository.GetWithBookAsync(loanId);
+        var loan = await loanRepository.GetWithBookAsync(loanId, readOnly: true, cancellationToken);
         if (loan is null)
         {
             logger.LogWarning("Loan {LoanId} not found", loanId);
@@ -65,7 +66,11 @@ public sealed class NotificationService(
             throw new InvalidOperationException($"Loan {loanId} is not overdue");
         }
 
-        var member = await memberRepository.GetByIdAsync(loan.MemberId);
+        var member = await memberRepository.GetByIdAsync(
+            loan.MemberId,
+            readOnly: true,
+            cancellationToken
+        );
         if (member is null)
         {
             logger.LogWarning(

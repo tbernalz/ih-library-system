@@ -29,10 +29,10 @@ public class LoanService(
     {
         logger.LogDebug("Searching loans with parameters: {@filter}", filter);
 
-        var pagedLoans = await loanRepository.SearchAsync(filter);
+        var pagedLoans = await loanRepository.SearchAsync(filter, readOnly: true);
 
         return new PagedResult<LoanDto>(
-            pagedLoans.Items.Select(MapToDto).ToList(),
+            [.. pagedLoans.Items.Select(MapToDto)],
             pagedLoans.TotalCount,
             pagedLoans.PageNumber,
             pagedLoans.PageSize
@@ -43,7 +43,7 @@ public class LoanService(
     {
         logger.LogDebug("Fetching loan with {LoanId}", loanId);
 
-        var loan = await loanRepository.GetByIdAsync(loanId);
+        var loan = await loanRepository.GetByIdAsync(loanId, readOnly: true);
 
         if (loan is null)
         {
@@ -62,7 +62,7 @@ public class LoanService(
             request.MemberId
         );
 
-        var member = await memberRepository.GetByIdAsync(request.MemberId);
+        var member = await memberRepository.GetByIdAsync(request.MemberId, readOnly: true);
 
         if (member == null)
         {
@@ -72,7 +72,7 @@ public class LoanService(
 
         EnsureCanCheckoutForMember(member);
 
-        var book = await bookRepository.GetByIdAsync(request.BookId);
+        var book = await bookRepository.GetByIdAsync(request.BookId, readOnly: false);
         if (book == null)
         {
             logger.LogWarning("Book retrieval failed: ID {BookId} not found", request.BookId);
@@ -119,7 +119,7 @@ public class LoanService(
 
     public async Task<LoanDto> ReturnBookAsync(Guid loanId, ReturnBookRequest request)
     {
-        var loan = await loanRepository.GetWithBookAsync(loanId);
+        var loan = await loanRepository.GetWithBookAsync(loanId, readOnly: false);
 
         if (loan is null)
         {
@@ -150,7 +150,7 @@ public class LoanService(
     {
         logger.LogInformation("Initiating loan deletion: {LoanId}", loanId);
 
-        var loan = await loanRepository.GetByIdAsync(loanId);
+        var loan = await loanRepository.GetByIdAsync(loanId, readOnly: false);
 
         if (loan is null)
         {
