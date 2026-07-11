@@ -1,6 +1,9 @@
 using IH.LibrarySystem.Application.Authors;
+using IH.LibrarySystem.Application.Authors.Commands;
 using IH.LibrarySystem.Application.Authors.Dtos;
+using IH.LibrarySystem.Application.Authors.Queries;
 using IH.LibrarySystem.Application.Common.Security;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,7 +12,7 @@ namespace IH.LibrarySystem.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Policy = AuthorizationPolicies.StaffOrAdmin)]
-public class AuthorsController(IAuthorService authorService) : ControllerBase
+public class AuthorsController(IMediator mediator, IAuthorService authorService) : ControllerBase
 {
     [HttpGet("{id}")]
     [AllowAnonymous]
@@ -22,7 +25,9 @@ public class AuthorsController(IAuthorService authorService) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<AuthorDto>> CreateAuthor(CreateAuthorRequest request)
     {
-        var author = await authorService.CreateAuthorAsync(request);
+        var author = await mediator.Send(
+            new CreateAuthorCommand(request.Name, request.Email, request.Bio)
+        );
         return CreatedAtAction(nameof(GetAuthor), new { id = author.Id }, author);
     }
 
