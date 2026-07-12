@@ -18,7 +18,7 @@ public class AuthorsController(IMediator mediator, IAuthorService authorService)
     [AllowAnonymous]
     public async Task<ActionResult<AuthorDto>> GetAuthor(Guid id)
     {
-        var author = await authorService.GetAuthorByIdAsync(id);
+        var author = await mediator.Send(new GetAuthorQuery(id));
         return Ok(author);
     }
 
