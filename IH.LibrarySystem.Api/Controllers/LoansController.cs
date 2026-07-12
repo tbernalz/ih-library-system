@@ -2,6 +2,7 @@ using IH.LibrarySystem.Application.Common.Security;
 using IH.LibrarySystem.Application.Loans;
 using IH.LibrarySystem.Application.Loans.Commands;
 using IH.LibrarySystem.Application.Loans.Dtos;
+using IH.LibrarySystem.Application.Loans.Queries;
 using IH.LibrarySystem.Domain.Common;
 using IH.LibrarySystem.Domain.Loans;
 using MediatR;
@@ -20,7 +21,7 @@ public class LoansController(IMediator mediator, ILoanService loanService) : Con
         [FromQuery] LoanSearchFilter filter
     )
     {
-        var result = await loanService.GetLoansAsync(filter);
+        var result = await mediator.Send(new GetLoansQuery(filter));
         return Ok(result);
     }
 
