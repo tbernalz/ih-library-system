@@ -1,8 +1,10 @@
 using IH.LibrarySystem.Application.Common.Security;
 using IH.LibrarySystem.Application.Loans;
+using IH.LibrarySystem.Application.Loans.Commands;
 using IH.LibrarySystem.Application.Loans.Dtos;
 using IH.LibrarySystem.Domain.Common;
 using IH.LibrarySystem.Domain.Loans;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +12,7 @@ namespace IH.LibrarySystem.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class LoansController(ILoanService loanService) : ControllerBase
+public class LoansController(IMediator mediator, ILoanService loanService) : ControllerBase
 {
     [HttpGet]
     [Authorize(Policy = AuthorizationPolicies.StaffOrAdmin)]
@@ -33,7 +35,7 @@ public class LoansController(ILoanService loanService) : ControllerBase
     [HttpPost("checkout")]
     public async Task<ActionResult<LoanDto>> CheckoutBook(CheckoutBookRequest request)
     {
-        var loan = await loanService.CheckoutBookAsync(request);
+        var loan = await mediator.Send(new CheckoutBookCommand(request.BookId, request.MemberId));
         return CreatedAtAction(nameof(GetLoan), new { id = loan.Id }, loan);
     }
 
