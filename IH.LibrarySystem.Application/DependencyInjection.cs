@@ -22,6 +22,10 @@ public static class DependencyInjection
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddMediatR(cfg =>
+            cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly)
+        );
+
         services
             .AddOptions<LibrarySettings>()
             .Bind(configuration.GetSection(LibrarySettings.SectionName))

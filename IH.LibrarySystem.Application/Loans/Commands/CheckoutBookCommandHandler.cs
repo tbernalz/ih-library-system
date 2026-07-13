@@ -1,3 +1,4 @@
+using IH.LibrarySystem.Application.Common.Abstractions;
 using IH.LibrarySystem.Application.Common.Exceptions;
 using IH.LibrarySystem.Application.Configuration;
 using IH.LibrarySystem.Application.Loans.Dtos;
@@ -15,6 +16,7 @@ public sealed class CheckoutBookCommandHandler(
     ILoanRepository loanRepository,
     IBookRepository bookRepository,
     IMemberRepository memberRepository,
+    ICurrentUserContext currentUserContext,
     IUnitOfWork unitOfWork,
     IOptions<LibrarySettings> settings
 ) : IRequestHandler<CheckoutBookCommand, LoanDto>
@@ -33,6 +35,8 @@ public sealed class CheckoutBookCommandHandler(
         );
 
         _ = member ?? throw new NotFoundException(nameof(Member), request.MemberId);
+
+        EnsureCanCheckoutForMember(member);
 
         if (!member.CanBorrow())
         {
@@ -77,5 +81,24 @@ public sealed class CheckoutBookCommandHandler(
             ReturnDate = loan.ReturnDate,
             FineAmount = loan.FineAmount,
         };
+    }
+
+    private void EnsureCanCheckoutForMember(Member member)
+    {
+        if (currentUserContext.IsStaffOrAdmin)
+        {
+            return;
+        }
+
+        var callerEmail = currentUserContext.Email;
+        if (
+            callerEmail is null
+            || !string.Equals(member.Email, callerEmail, StringComparison.OrdinalIgnoreCase)
+        )
+        {
+            throw new ForbiddenException(
+                "You can only check out books for your own member account."
+            );
+        }
     }
 }
