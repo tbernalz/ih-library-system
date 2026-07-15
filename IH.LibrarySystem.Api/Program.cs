@@ -3,9 +3,17 @@ using IH.LibrarySystem.Api.Extensions;
 using IH.LibrarySystem.Api.Middleware;
 using IH.LibrarySystem.Application;
 using IH.LibrarySystem.Infrastructure;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 builder
     .Services.AddControllers(options =>
@@ -27,6 +35,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddLibraryAuthentication(builder.Configuration);
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
